@@ -1,6 +1,6 @@
 READ THE README_FIRST FILE NOW PLEASE!!!
 
-This project has a SLIM PITCH of 0.070 inches(1.778mm) Standard 2.54mm (0.100) pitch pins will NOT FIT. I made and tested an adapter board but it was in the way or the morse keyer
+This project has a SLIM PITCH of 0.070 inches(1.778mm) Standard 2.54mm (0.100) pitch pins will NOT FIT. I made and tested an adapter board but it was in the way of the morse keyer
 switch PCB, so has been discarded.
 
 OEM gerbers: No programming header or pads. It is assumed programming will be handled by external clip or pre-programmed prior to fitting
