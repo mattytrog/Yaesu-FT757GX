@@ -1,6 +1,7 @@
 READ THE README_FIRST FILE NOW PLEASE!!!
 
-This project has a SLIM PITCH of 0.070 inches(1.778mm) Standard 2.54mm (0.100) pitch pins will NOT FIT. I made and tested an adapter board but it was in the way of the morse keyer switch PCB, so has been discarded.
+This project has a SLIM PITCH of 0.070 inches(1.778mm) Standard 2.54mm (0.100) pitch pins will NOT FIT.
+I made and tested an adapter board but it was in the way of the morse keyer switch PCB, so has been discarded.
 
 OEM gerbers: No programming header or pads. It is assumed programming will be handled by external clip or pre-programmed prior to fitting
 DIY gerbers: Pickit 3 compatible header (2 sided boards/NON TSSOP) or pads (TSSOP version) supplied for your convenience. There is a little LNK jumper to link after programming (MCLR-GND)
