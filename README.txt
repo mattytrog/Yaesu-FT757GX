@@ -6,6 +6,9 @@ PCB gerbers by M. Bostock
 This project has a SLIM PITCH of 0.070 inches(1.778mm) Standard 2.54mm (0.100) pitch pins will NOT FIT.
 I made and tested an adapter board but it was in the way of the morse keyer switch PCB, so has been discarded.
 
+You can use either a SOIC-28 or a SSOP-28 PIC controller with this. Just make sure you use the right berber for the riht size chip!!!
+Gerbers and diagram are organised into SSOP, SOIC folders etc... Take a look
+
 OEM gerbers: No programming header or pads. It is assumed programming will be handled by external clip or pre-programmed prior to fitting
 DIY gerbers: Pickit 3 compatible header (2 sided boards/NON TSSOP) or pads (TSSOP version) supplied for your convenience. There is a little LNK jumper to link after programming (MCLR-GND)
 
