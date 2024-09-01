@@ -1,5 +1,8 @@
 READ THE README_FIRST FILE NOW PLEASE!!!
 
+Firmware by R. Kauls
+PCB gerbers by M. Bostock
+
 This project has a SLIM PITCH of 0.070 inches(1.778mm) Standard 2.54mm (0.100) pitch pins will NOT FIT.
 I made and tested an adapter board but it was in the way of the morse keyer switch PCB, so has been discarded.
 
@@ -10,12 +13,11 @@ DIY flush mount board added. This uses a PIC16F737-I/SS TSSOP package. Can be su
     Fit to same side as original IC.
 
 TESTING: Inverted DIY flush board added. This is the same as the flush board apart from everything is inverted. This is designed slim enough to fit underneath the VFD display!
-    Do not attempt to fit this to the NON-DISPLAY SIDE! It will not work.
+    Do not attempt to fit this to the NON-DISPLAY SIDE with the components facing you! It will not work. If fitting this in place of chip, components face the front of radio.
 
 TESTING: The TMS1_TH gerber is for a through-hole version of the PIC16F737 IC (PIC16F737-I/SP)
 
-Firmware by R. Kauls
-PCB gerbers by M. Bostock
+
 
 Disclaimer: You have only yourself to blame. Not for commercial use. All info and technical drawings correct at time of upload. E+OE.
 
