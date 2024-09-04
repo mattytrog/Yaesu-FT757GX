@@ -4,11 +4,22 @@ Firmware by R. Kauls
 PCB gerbers by M. Bostock
 
 TL;DR:- 
+
+Parts needed:
+
+PIC16F737 microcontroller
+17 x DTB113Z digital transistors. These are pre-biased for you.
+17 x 100K 0603 SMD resistors
+1 x 100nF Capacitor
+Header pins to fit (I use 2mm pitch pins and remove the plastic "holder".
+Pickit 3 Programmer or other programmer
+
 Easiest to build is the SOIC version. Use the DIY gerber if you want to flash the chip after you have built the complete project.
 SSOP and SSOP inverted are slightly more difficult but is a lot neater.
 The SSOP inverted board is in case you want to keep the original chip fitted. You might have to disconnect some pins to old chip, eg power... But hides the custom PCB and keeps it looking "original"
 Both SSOP boards have flashing / programming capability as standard.
 LOOK AT THE PNG PICTURES IN EACH FOLDER!!!
+==========================================
 
 
 This project has a SLIM PITCH of 0.070 inches(1.778mm) Standard 2.54mm (0.100) pitch pins will NOT FIT.
