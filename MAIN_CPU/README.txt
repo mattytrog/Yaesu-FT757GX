@@ -1,16 +1,3 @@
-Changelog:
-
-v0.1b
-Initial release. Pretty buggy. Some PLL calculations forgotten. This release should be discarded
-
-v0.2b
-Mic buttons now working. 
-Up/Down = 1kc...
-FAST + Up/Down = 100kc... 
-FAST by itself = MHZ UP. Will loop over. So after 30mhz, will go to 0.
-PLL calculations hopefully all correct now
-
-
 Parts needed:
 
 PIC18F452
