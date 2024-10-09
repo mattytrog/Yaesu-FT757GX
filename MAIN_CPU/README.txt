@@ -1,3 +1,7 @@
+9/10/2024 v0.5 hex and source added. Will still be messy in places
+Compile with CCS compiler
+========================================
+
 Parts needed:
 
 PIC18F452
@@ -42,12 +46,14 @@ Compatibility with a PIC-based display CPU
 VFO dial acceleration
 CB mode
 
+========================================
 VFO dial acceleration - or "fuzzy logic" if you prefer:
 The display counts faster the more the VFO dial is turned.
 Slowly - 10 cycles
 Faster - 1000
 Faster still - 10000
 Fastest - MHz
+========================================
 
 CB Mode
 This places the transceiver in CB mode.
@@ -58,23 +64,49 @@ Channels 1-40 accessible, all pre-programmed.
 Long-press SPLIT to change region from UK allocation to CEPT/FCC allocation (or mid block as we in the UK call it)
 "b" in the display when switching means "Britain"
 "A E" in the display when switching means "America / Europe"
+========================================
 
-CAT is fully implemented (only the features oin original design). Tested with FLdigi. PLEASE REPORT IF IT DOESN'T WORK FOR YOU.
+CAT is fully implemented (only the features on original design). Tested with FLdigi. PLEASE REPORT IF IT DOESN'T WORK FOR YOU.
 To test, send 67 45 23 01 0A (in hex). Display should change to 123456
+========================================
 
-To reset EEPROM, hold VFO A/B when powering on. Release. Listen for the beeps. Processor will reboot, resetting EEPROM. 
+To reset EEPROM, hold VFO A/B at any time. Release. Listen for the beeps. Processor will reboot, resetting EEPROM. 
+========================================
 
+MIC buttons
+These are enhanced over stock
+
+In VFO mode...
+UP/DOWN frequency up and down. Press up and down THEN hold fast to increase speed
+Press FAST to swap between VFO A/B
+Hold FAST for 3 seconds to change to MR mode (let go after the beeps)
+Keep holding to flick into CB mode
+
+In MR mode...
+UP/DOWN channel up and down
+Hold FAST for 3 seconds to swap to VFO mode
+Keep holding to flick into CB mode
+
+In CB mode
+UP/DOWN, channel up/down
+press FAST to swap between British and Cept / FCC bands (Muppets or mid-band)
+Hold fast for 3 seconds to go back into VFO mode
+========================================
+
+MASTER OFFSET
+This allows you to alter the displayed frequency vs actual frequency
+
+To use:
+Hold M>VFO for 3 seconds until screen goes blank. The radio will now be on 7000.0
+Listen or transmit (with frequency counter ideally) and adjust dial. Value will be displayed (on the left for negative values, right for positive)
+
+Once your desired offset is reached, press M>VFO again to save. You will hear beeps and radio will reboot.
+Your display will now reflect your actual frequency. The N-code calculations do not change over the whole PLL range, so if you set it, it should be right everywhere.
+NOTE: IMPORTANT: This will not help if your radio is damaged or has faulty diodes. To reset back to default values, reset EEPROM by holding VFOa/B for 3 seconds.
+========================================
 
 Not implemented yet:
-
-TX Inhibit
-TX inhibit (will be added, thus, rig will be widebanded by default. The switch on the front panel will have no effect for now)
-RS232 CAT transmit. Is feature complete but not included for the moment as still deciding how to do it. Choices are:
-
-RS232
-Bidirectional single wire (this requires modification of your USB-serial adapter - just a diode adding)
-TX/RX separate - the RC3 and RD0 pins have been broken out (these are the 500k & PMS switch). We use one of these pins for RS232 TX 
-(as long as the button is not pressed obviously)
+RS232 CAT transmit. Is feature complete but not included for the moment as still deciding how to do it. I need a copy of a data stream from somebody please!
 
 BUGS: There is bound to be some. Please open issue on here or find me on FB
 
