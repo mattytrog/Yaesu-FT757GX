@@ -1,3 +1,15 @@
+Changelog v0.5b
+
+Bugs squished, new ones probably introduced
+MIC buttons new and improved
+Master offset function to adjust your display / actual TX/RX frequency
+PLL N-code calculation completely rewritten, making other corrections redundant.
+
+Source published. Comment out various defines to get rid of or enable features.
+NEEDS TESTING WITH A REAL TMS2370 CHIP!!! Let me know
+
+
+////////////////////////////////////////////////////////////
 Changelog v0.3b
 
 TX fixed. PLL strobing was going too fast and portB data wasn't getting latched correctly
