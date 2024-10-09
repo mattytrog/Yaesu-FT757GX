@@ -29,8 +29,11 @@ Pickit header on CPU board for your cnvenience.
 
 Building on earlier work by VK2TRP, this is my new version.
 
-Features implemented in software:
 
+Only one missing feature. PMS. What the hell is PMS? How does it work? How is it supposed to work? I might turn this into a frequency scanner.
+========================================
+
+Features implemented in software:
 As stock:
 
 VFO
@@ -45,7 +48,9 @@ Additional features:
 Compatibility with a PIC-based display CPU
 VFO dial acceleration
 CB mode
-
+Offset fuction
+Enhanced MIC control
++more
 ========================================
 VFO dial acceleration - or "fuzzy logic" if you prefer:
 The display counts faster the more the VFO dial is turned.
