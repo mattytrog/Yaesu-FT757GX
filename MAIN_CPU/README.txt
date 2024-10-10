@@ -40,7 +40,15 @@ Memories
 Buttons
 MIC buttons
 CAT serial (4800 baud, 2 stop bits)
-
+Out-of-band TX inhibit
+M>VFO
+VFO<M
+M<>VFO
+Split
+Clarifier
+Dial lock
+Band / 500k UP/DOWN
+Memory(MR) management
 
 Additional features:
 
@@ -72,6 +80,15 @@ Long-press SPLIT to change region from UK allocation to CEPT/FCC allocation (or 
 
 CAT is fully implemented (only the features on original design). Tested with FLdigi. PLEASE REPORT IF IT DOESN'T WORK FOR YOU.
 To test, send 67 45 23 01 0A (in hex). Display should change to 123456
+
+Extra CAT commands in addition to the original Yaesu ones:
+
+XX XX XX XX OE Return delay (currently useless as CAT tx isn't get implemented)
+XX XX XX 00 10 Radio status(75 bytes returned) (as in FT757GXII but not currently working as I need a sample data stream to compare)
+XX XX XX XX FC Temporary wideband, regardless of front panel switch position (Until next reboot)
+XX XX XX XX FD CB mode toggle
+XX XX XX XX FE Reset EEPROM and reboot
+XX XX XX XX FF Reboot CPU
 ========================================
 
 To reset EEPROM, hold VFO A/B at any time. Release. Listen for the beeps. Processor will reboot, resetting EEPROM. 
@@ -103,6 +120,7 @@ This allows you to alter the displayed frequency vs actual frequency
 To use:
 Hold M>VFO for 3 seconds until screen goes blank. The radio will now be on 7000.0
 Listen or transmit (with frequency counter ideally) and adjust dial. Value will be displayed (on the left for negative values, right for positive)
+To test a different frequency, press BAND UP/DOWN to go up or down 1 mhz.
 
 Once your desired offset is reached, press M>VFO again to save. You will hear beeps and radio will reboot.
 Your display will now reflect your actual frequency. The N-code calculations do not change over the whole PLL range, so if you set it, it should be right everywhere.
