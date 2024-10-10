@@ -115,7 +115,8 @@ Hold fast for 3 seconds to go back into VFO mode
 ========================================
 
 MASTER OFFSET
-This allows you to alter the displayed frequency vs actual frequency
+This allows you to alter the displayed frequency vs actual frequency.
+This is handy if your radio is slightly "off-centre" and you do not fancy opening it up and pot-twiddling.
 
 To use:
 Hold M>VFO for 3 seconds until screen goes blank. The radio will now be on 7000.0
