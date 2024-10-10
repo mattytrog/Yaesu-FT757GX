@@ -14,22 +14,21 @@ turned pins (2x20)
 Schematic enclosed...
 
 This is a replacement CPU for the FT757GX transceivers.
+PLL calcs, firmware, gerbers and corrections by M. Bostock
 Original PLL calcs and schematic by VK2TRP
-Firmware, gerbers and corrections by M. Bostock
 
 What is this?
 
 This is a replacement CPU for the FT757GX transceiver by Yaesu.
 
 ENSURE YOUR CPU IS FAULTY BEFORE REPLACING IT WITH THIS!!!
+THIS NEEDS TESTING WITH A REAL TMS2370 DISPLAY CPU!!! It should be fine. With my TMS replacement, its fine. Its easy to modify the code IF theres a problem on real TMS chips.
 
-Based on a PIC18F452. Programmed using CCS + Pickit3.
+Based on a PIC18F452. Programmed using Pickit3. Hex file built with CCS.
 
 Pickit header on CPU board for your cnvenience.
 
-Building on earlier work by VK2TRP, this is my new version.
-
-
+This is all new code.
 Only one missing feature. PMS. What the hell is PMS? How does it work? How is it supposed to work? I might turn this into a frequency scanner.
 ========================================
 
