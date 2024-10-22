@@ -75,9 +75,10 @@ This places the transceiver in CB mode.
 Long-press MR/VFO to activate or deactivate.
 Channels 1-40 accessible, all pre-programmed.
 
-Long-press SPLIT to change region from UK allocation to CEPT/FCC allocation (or mid block as we in the UK call it)
+Press SPLIT to change region from UK allocation to CEPT/FCC allocation (or mid block as we in the UK call it)
+Long-press SPLIT to go into 80ch mode
 "b" in the display when switching means "Britain"
-"A E" in the display when switching means "America / Europe"
+"CE" in the display when switching means "America / Europe"
 ========================================
 
 CAT is fully implemented (only the features on original design). Tested with FLdigi. PLEASE REPORT IF IT DOESN'T WORK FOR YOU.
@@ -85,55 +86,19 @@ To test, send 67 45 23 01 0A (in hex). Display should change to 123456
 
 Extra CAT commands in addition to the original Yaesu ones:
 
+**FORGOTTEN TO ADD THEM BACK. WILL BE IN v0.8**
 XX XX XX XX OE Return delay (currently useless as CAT tx isn't get implemented)
 XX XX XX 00 10 Radio status(75 bytes returned) (as in FT757GXII but not currently working as I need a sample data stream to compare)
 XX XX XX XX FC Temporary wideband, regardless of front panel switch position (Until next reboot)
 XX XX XX XX FD CB mode toggle
 XX XX XX XX FE Reset EEPROM and reboot
 XX XX XX XX FF Reboot CPU
+**FORGOTTEN TO ADD THEM BACK. WILL BE IN v0.8**
 ========================================
 
 To reset EEPROM, hold VFO A/B at any time. Release. Listen for the beeps. Processor will reboot, resetting EEPROM. 
 ========================================
 
-MIC buttons
-These are enhanced over stock
-
-In VFO mode...
-UP/DOWN frequency up and down. Press up and down THEN hold fast to increase speed
-Press FAST to swap between VFO A/B
-Hold FAST for 3 seconds to change to MR mode (let go after the beeps)
-Keep holding to flick into CB mode
-
-In MR mode...
-UP/DOWN channel up and down
-Hold FAST for 3 seconds to swap to VFO mode
-Keep holding to flick into CB mode
-
-In CB mode
-UP/DOWN, channel up/down
-press FAST to swap between British and Cept / FCC bands (Muppets or mid-band)
-Hold fast for 3 seconds to go back into VFO mode
-========================================
-
-MASTER OFFSET
-This allows you to alter the displayed frequency vs actual frequency.
-This is handy if your radio is slightly "off-centre" and you do not fancy opening it up and pot-twiddling.
-
-To use:
-Hold M>VFO for 3 seconds until screen goes blank. The radio will now be on 7000.0
-Listen or transmit (with frequency counter ideally) and adjust dial. Value will be displayed (on the left for negative values, right for positive)
-To test a different frequency, press BAND UP/DOWN to go up or down 1 mhz.
-
-Once your desired offset is reached, press M>VFO again to save. You will hear beeps and radio will reboot.
-Your display will now reflect your actual frequency. The N-code calculations do not change over the whole PLL range, so if you set it, it should be right everywhere.
-NOTE: IMPORTANT: This will not help if your radio is damaged or has faulty diodes. To reset back to default values, reset EEPROM by holding VFOa/B for 3 seconds.
-========================================
-
-Not implemented yet:
-RS232 CAT transmit. Is feature complete but not included for the moment as still deciding how to do it. I need a copy of a data stream from somebody please!
-
-BUGS: There is bound to be some. Please open issue on here or find me on FB
 
 Only fit this if your CPU(s) are faulty. Yes, some new features are handy, but thats no reason to rip out a perfectly good chip.
 In capitals: Ahem: IF YOU ARE THINKING OF DOING THIS BECAUSE OF LOW RECEIVE, TX PROBLEMS, NO POWER ETC... DON'T. 
