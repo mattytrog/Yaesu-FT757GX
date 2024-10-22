@@ -1,5 +1,7 @@
-9/10/2024 v0.5 hex and source added. Will still be messy in places
-Compile with CCS compiler
+!!Compile with CCS compiler!!
+
+
+22/10/24 v0.7 hex and source added. Take a read.
 ========================================
 
 Parts needed:
