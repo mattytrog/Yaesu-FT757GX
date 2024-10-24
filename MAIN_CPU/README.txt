@@ -1,5 +1,8 @@
 !!Compile with CCS compiler!!
 
+24/10/24 v0.71 hex/source added. Small bugfix release.
+Improved 10hz counting (should be correct now)
+Restored missing custom CAT commands
 
 22/10/24 v0.7 hex and source added. Take a read.
 ========================================
@@ -86,15 +89,14 @@ To test, send 67 45 23 01 0A (in hex). Display should change to 123456
 
 Extra CAT commands in addition to the original Yaesu ones:
 
-**FORGOTTEN TO ADD THEM BACK. WILL BE IN v0.8**
-XX XX XX XX OE Return delay (currently useless as CAT tx isn't get implemented)
-XX XX XX 00 10 Radio status(75 bytes returned) (as in FT757GXII but not currently working as I need a sample data stream to compare)
-XX XX XX XX FC Temporary wideband, regardless of front panel switch position (Until next reboot)
-XX XX XX XX FD CB mode toggle
+XX XX XX XX FC Temporary wideband, regardless of front panel switch position (Until next reboot). See caution below regarding CB mode...
+XX XX XX XX FD CB mode toggle. Wil only work when widebanded, either through switch or temporary FC command as above
 XX XX XX XX FE Reset EEPROM and reboot
 XX XX XX XX FF Reboot CPU
-**FORGOTTEN TO ADD THEM BACK. WILL BE IN v0.8**
 ========================================
+
+If you temporary wideband your radio AND you switch off, it will be locked in to CB mode, preventing transmission.
+Hold down VFO A/B to fix. Remember to disable CB mode before power down if using temporary wideband. I might "fix" this in next release...
 
 To reset EEPROM, hold VFO A/B at any time. Release. Listen for the beeps. Processor will reboot, resetting EEPROM. 
 ========================================
