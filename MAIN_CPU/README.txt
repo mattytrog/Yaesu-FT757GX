@@ -100,9 +100,6 @@ XX XX XX XX FE Reset EEPROM and reboot
 XX XX XX XX FF Reboot CPU
 ========================================
 
-If you temporary wideband your radio AND you switch off, it will be locked in to CB mode, preventing transmission.
-Hold down VFO A/B to fix. Remember to disable CB mode before power down if using temporary wideband. I might "fix" this in next release...
-
 To reset EEPROM, hold VFO A/B at any time. Release. Listen for the beeps. Processor will reboot, resetting EEPROM. 
 ========================================
 
