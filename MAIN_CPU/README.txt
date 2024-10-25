@@ -1,5 +1,10 @@
 !!Compile with CCS compiler!!
 
+26/10/24 v0.72 hex/source added.
+Another bugfix. Turning off in CB mode, under a temporary wideband would cause rig to be locked in CB, with TX inhibit on. Fixing would need an EEPROM reset. 
+This is now fixed. One line of code! 
+
+
 24/10/24 v0.71 hex/source added. Small bugfix release.
 Improved 10hz counting (should be correct now)
 Restored missing custom CAT commands
