@@ -1771,11 +1771,12 @@ start:
        if(counter > 5000)
        {
        counterstart = 0;
+       counter = 0;
        if(fine_tune) fine_tune_display = 0;
        
        if(mem_mode == 0 || mem_mode == 1) {save_vfo_f(active_vfo, frequency);}
        
-       } else fine_tune_display = 0;
+       }
        
        check_limits();
        vfo_disp(active_vfo, dcs, frequency, mem_channel);
