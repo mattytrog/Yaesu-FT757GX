@@ -68,7 +68,7 @@
 #define max_freq 3000000
 
 //uncomment for bare minimum size. No mic buttons, dial acceleration, CB or CAT. I advise a bigger PIC!
-#define small_rom 
+//#define small_rom 
 
 //remove bits and pieces if you wish, or problem is suspected
 #ifndef small_rom
@@ -204,10 +204,8 @@ int32 blacklist[20]= {
 2800000, 3000000
 };
 
-int32 frequency, stopcheck;
+int32 frequency;
 int8 mem_channel, PLLband, band, mem_mode, dcs, speed_dial;
-int8 dummy=0;
-int32 dummy32=0;
 #ifndef store_to_eeprom
 //create ram store, follows eeprom-style if enabled
 int32 ram_bank[32];
@@ -272,7 +270,6 @@ void write32(int8 address, unsigned int32 data)
    if(data == temp_data) return;
    for(i = 0; i < 4; i++)
    write_eeprom(address + i, *((int8 *)(&data) + i));
-   beep();
 }
 
 unsigned int32 read32(int8 address)
@@ -345,7 +342,7 @@ void save_offset_f(int32 value) {save32 (20, value);}
 int32 load_offset_f() {return (load32 (20));}
 
 void save_checkbyte_n() {save8(15, 01);}
-int8 load_checkbyte_n() {load8(15);}
+int8 load_checkbyte_n() {return (load8(15));}
 void reset_checkbyte_n() {save8(15, 0xFF);}
 
 void save_vfo_n(int8 res) {save8(14, res);}
@@ -1040,7 +1037,7 @@ void program_offset();
 int8 buttonaction (int8 res)
 {
 
-   if(!res) return;
+   if(!res) return 0;
    if       (res == 1) clarifier_button();
    else if  (res == 2) down_button();
    else if  (res == 3) up_button();
