@@ -144,7 +144,7 @@ int8 BITSA,BITSB,BITSC;
 # bit   btn_down=BITSB.3 
 # bit   dltmp=BITSB.4
 # bit   dir=BITSB.5
-# bit   cb_mode = BITSB.6
+//# bit   cb_mode = BITSB.6
 # bit   timerstart = BITSC.0
 # bit   long_press = BITSC.1
 //# bit   speed_dial = BITSC.2
@@ -844,6 +844,10 @@ void down_button()
       if(mem_channel > 0) --mem_channel;
       load_frequency(1);
       }
+      if(mem_mode == 2)
+      {
+      if(cb_channel > 1) --cb_channel;
+      }
    }
    else
    {
@@ -867,6 +871,10 @@ void up_button()
       {
       if(mem_channel < 14) ++mem_channel;
       load_frequency(1);
+      }
+      if(mem_mode == 2)
+      {
+      if(cb_channel < channel_amount) ++cb_channel;
       }
    }
    else
@@ -931,20 +939,21 @@ void vfom_button()
 
 void mrvfo_button()
 {
-if(mem_mode == 1)
-{
-frequency = load_cache_vfo_f();
-mem_mode = 0;
-save_mode_n(mem_mode);
-}
-else
+if(mem_mode == 0)
 {
 save_cache_vfo_f(frequency);
 mem_mode = 1;
 save_mode_n(mem_mode);
 load_frequency(mem_mode);
+return;
 }
-
+if(mem_mode == 1)
+{
+frequency = load_cache_vfo_f();
+mem_mode = 0;
+save_mode_n(mem_mode);
+return;
+}
 }
 
 void vfoab_button()
@@ -1534,9 +1543,10 @@ if(mem_mode == 0)
       frequency -=1000;
       }
    }
-   if(res == 10) vfoab_button();
+   if(res == 10) mrvfo_button();
    if(res == 11) frequency += 1000;
    if(res == 12) frequency -= 1000;
+   return;
 }
 
 if(mem_mode == 1 || mem_mode == 2)
@@ -1556,9 +1566,10 @@ if(mem_mode == 1 || mem_mode == 2)
    {
    if(res == 10) mrvfo_button();
    }
-   if(cb_mode)
+
+  #ifdef include_cb
+   if(mem_mode == 2)
    {
-#ifdef include_cb
    if(res == 10) toggle_cb_region();
 #endif
    }
@@ -1566,6 +1577,7 @@ if(mem_mode == 1 || mem_mode == 2)
 
 }
 #endif
+
 void transmit_check()
 {
 
