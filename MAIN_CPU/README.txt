@@ -1,4 +1,10 @@
 !!Compile with CCS compiler!!
+0.76b Changelog
+Fixed weird bug where the CAT datastream digits would become misaligned (compiler optimisation doing it?)
+Just changing all buffered bytes to int32s corrected it. Even though the bytes are obviously under int32 (they are int8),
+they were becoming misaligned, resulting in the LSBs (bytes 2 & 1) of the CAT stream getting "lost" during the frequency multiplication calculation.
+Looks like they were added elsewhere (or lost), resulting in lower frequency being displayed
+========================================
 
 2/11/24 v0.75b hex and source added again
 11:57PM I accidentally uploaded my debugging version earlier this evening. I have reuploaded the correct version now
@@ -7,22 +13,24 @@ Fine tune facility. display moves a digit to the left when incrementing slowly (
 
 Single offset, accessible from long press of CLAR. Hold CLAR to set, if your radio needs its frequency correcting. See below!
 To remove the offset, just hold CLAR and ensure the number 0 is showing, then save. 0 offset!
+========================================
 
 3 different "dials" to try. 
 Dial 0 is just a standard non-accelerated dial. 
 Dial 1 is timer-based ( just counts up faster the faster you spin). 
 Dial 2 is sample-based. Permits you to give a sharp turn of the dial to jump a high amount, or just slowly turn for normal.
 All selectable with long press of M>VFO
-
+========================================
 
 26/10/24 v0.72 hex/source added.
 Another bugfix. Turning off in CB mode, under a temporary wideband would cause rig to be locked in CB, with TX inhibit on. Fixing would need an EEPROM reset. 
 This is now fixed. One line of code! 
-
+========================================
 
 24/10/24 v0.71 hex/source added. Small bugfix release.
 Improved 10hz counting (should be correct now)
 Restored missing custom CAT commands
+========================================
 
 22/10/24 v0.7 hex and source added. Take a read.
 ========================================
