@@ -1,4 +1,17 @@
 !!Compile with CCS compiler!!
+0.8b Changelog
+Fixed incorrect Hz being sent to the mixers. This was because the pin we use for strobing the band data was being strobed too 
+quickly for the first digit, leading to almost an off-by-one (is that what its called?) error.
+Dial sampling changed to directly sense the feedback from the BCD counter, rather than the old dial pulse. Using the dial pulse is OK, but
+pulses are being missed. Even manually pulling the pin high didn`t help. Conclusion: The dial pulse is actually not used for counting in stock radios...
+Its merely there to return a value on if the dial is spinning or not.
+Result: the dial is far more sensitive now.
+Removed type 2 dial. It was crap.
+Fixed VFO not being saved, unless there was a pulse on the dial
+Fixed TX inhibit vulnerability where you could change the frequency and transmit, thus defeating the switch behind front panel by just pressing MIC button
+
+
+
 0.76b Changelog
 Fixed weird bug where the CAT datastream digits would become misaligned (compiler optimisation doing it?)
 Just changing all buffered bytes to int32s corrected it. Even though the bytes are obviously under int32 (they are int8),
@@ -15,10 +28,9 @@ Single offset, accessible from long press of CLAR. Hold CLAR to set, if your rad
 To remove the offset, just hold CLAR and ensure the number 0 is showing, then save. 0 offset!
 ========================================
 
-3 different "dials" to try. 
+2 different "dials" to try. 
 Dial 0 is just a standard non-accelerated dial. 
 Dial 1 is timer-based ( just counts up faster the faster you spin). 
-Dial 2 is sample-based. Permits you to give a sharp turn of the dial to jump a high amount, or just slowly turn for normal.
 All selectable with long press of M>VFO
 ========================================
 
