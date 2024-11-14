@@ -1,4 +1,19 @@
-//Yaesu CPU firmware. (c)2024 Matthew Bostock v0.75b
+//Yaesu CPU firmware v0.8b (c)2024
+//Written by Matthew Bostock 
+//Testing and research Siegmund Souza
+//PLL diagrams and valuable info Daniel Keogh
+
+//!0.8b Changelog
+//!Fixed incorrect Hz being sent to the mixers. This was because the pin we use for strobing the band data was being strobed too 
+//!quickly for the first digit, leading to almost an off-by-one (is that what its called?) error.
+//!Dial sampling changed to directly sense the feedback from the BCD counter, rather than the old dial pulse. Using the dial pulse is OK, but
+//!pulses are being missed. Even manually pulling the pin high didn`t help. Conclusion: The dial pulse is actually not used for counting in stock radios...
+//!Its merely there to return a value on if the dial is spinning or not.
+//!Result: the dial is far more sensitive now.
+//!Removed type 2 dial. It was crap.
+//!Fixed VFO not being saved, unless there was a pulse on the dial
+//!Fixed TX inhibit vulnerability where you could change the frequency and transmit, thus defeating the switch behind front panel by just pressing MIC button
+
 
 //!0.76b Changelog
 //Fixed weird bug where the CAT datastream digits would become misaligned (compiler optimisation doing it?)
@@ -6,16 +21,13 @@
 //they were becoming misaligned, resulting in the LSBs (bytes 2 & 1) of the CAT stream getting "lost" during the frequency multiplication calculation.
 //Looks like they were added elsewhere (or lost), resulting in lower frequency being displayed
 
-//!0.75b Changelog
-//!Reverted to single offset. Just one offset now for the whole radio. Multiple offsets was too complicated.
-//!If your radio is off frequency only on certain bands, you have a problem this firmware cannot fix!
+
 //!
 //!Dial acceleration
 //!=================
-//!Choice of 3 dial types to use for main VFO tuning (0, 1 and 2)
+//!Choice of 2 dial types to use for main VFO tuning
 //!0 = Standard non-accelerated dial
-//!1 = Accelerated dial - timer / tug-of-war based. Gets faster the more faster you spin
-//!2 = Accelerated dial - Sample-based. Will move slowly as normal, but dial can be "flicked" around eg from a stop to get higher or lower very quickly
+//!1 = Accelerated dial - timer / tug-of-war based. Gets faster the longer you spin
 //!Change dial type by holding M>VFO button until you hear the two beeps
 //!
 //!Fine Tuning
@@ -24,8 +36,8 @@
 //!digit to the left, to enable the "hidden" digit to be displayed. I have left this disabled because I didn't want to cause confusion as it can make
 //!the display look a little confusing until you are used to it. Enable or disable by holding D.LOCK
 //!
-//!Software Frequency Alignment
-//!============================
+//!Software Frequency Alignment - Auto reference frequency compensation
+//!====================================================================
 //!Single tuning offset. Tune to any frequency and hold CLAR until the display shows 0. You can then tune up or down, until your frequency is correct.
 //!Use of a known on-frequency signal and/or frequency counter (for transmitting tests) is HIGHLY recommended.
 //!When happy, hold CLAR to save. To reset, just begin the procedure again and save at 0. Or hold down VFO A/B to reset EEPROM data
@@ -63,6 +75,7 @@
 //!CAT function test:
 //!Offset setup
 //!Fine tuning test
+//Frequency accuracy
 
 #include <18F452.h>
 #fuses HS,PUT, NOWDT,NOPROTECT,NOLVP, BORV42
@@ -87,6 +100,8 @@
 #endif
 
 //#define debug
+//#define ncodes
+
 
 # byte PORTA = 0x0f80
 # byte PORTB = 0x0f81
@@ -95,18 +110,18 @@
 # byte PORTE = 0x0f84
 
 # bit dial_clk=PORTA.0  //input  // from q66 counter input (normally high, pulses low for 50us, 1/10? of dial) interupt driven?
-# bit Q64_4=PORTA.1  //output // cpu pin 4 bit 2 Q64 line decoder
-# bit Q64_5=PORTA.2  //output // cpu pin 5 bit 1
-# bit Q64_6=PORTA.3  //output // cpu pin 6 bit 0
+# bit Q64_C=PORTA.1  //output // cpu pin 4 bit 2 Q64 line decoder
+# bit Q64_B=PORTA.2  //output // cpu pin 5 bit 1
+# bit Q64_A=PORTA.3  //output // cpu pin 6 bit 0
 # bit disp_int=PORTA.4  //output // display interupt
 # bit k1=PORTA.5  //output // display bit 0
 # bit pina6=PORTA.6
 # bit pina7=PORTA.7
 
-# bit CPU_29_BIT1=PORTB.0  //output // bus data bit 0 pll d0
-# bit CPU_30_BIT2=PORTB.1  //output //          bit 1     d1
-# bit CPU_31_BIT4=PORTB.2  //output //          bit 2     d2
-# bit CPU_32_BIT8=PORTB.3  //output //          bit 3     d3
+# bit CPU_BIT1=PORTB.0  //output // bus data bit 0 pll d0
+# bit CPU_BIT2=PORTB.1  //output //          bit 1     d1
+# bit CPU_BIT4=PORTB.2  //output //          bit 2     d2
+# bit CPU_BIT8=PORTB.3  //output //          bit 3     d3
 # bit CPU_33_BIT16=PORTB.4  //output // pll a0
 # bit CPU_34_BIT32=PORTB.5  //output //     a1
 # bit CPU_35_BIT64=PORTB.6  //output //     a2
@@ -276,6 +291,7 @@ void write32(int8 address, unsigned int32 data)
    if(data == temp_data) return;
    for(i = 0; i < 4; i++)
    write_eeprom(address + i, *((int8 *)(&data) + i));
+   //beep();
 }
 
 unsigned int32 read32(int8 address)
@@ -378,70 +394,112 @@ int8 load_dcs_n() {return (load8(7));}
 void save_cache_n(int8 res) {save8(6, res);}
 int8 load_cache_n() {return (load8(6));}
 
+//!BCD Decoder Q64
+//!C - 12, B - 13, A - 10
+//!C - CPU4, B - CPU5, A - CPU6
+//!Q0 - NC
+//!Q1 - PLL1
+//!Q2 - Q65 (1)
+//!Q3 - Q69 (5)
+//!Q4 - Beep
+//!Q5 - Dial lock
+//!Q6 - TX Inhibit
+//!Q7 - N/C
+//!Q8 - NC
+//!Q9 - NC
+
+//!C  B  A
+//!0  0  1     Q1 PLL1
+//!0  1  0     Q2 Q65(1)
+//!0  1  1     Q3 Q69(5)
+//!1  0  0     Q4 Beep
+//!1  0  1     Q5 Dial Lock
+//!1  1  0     Q6 TX Inhibit
+//!
 
 void restore_pin_values()
 {
- Q64_4 = tmp_pin4; 
- Q64_5 = tmp_pin5;
- Q64_6 = tmp_pin6;
+ Q64_C = tmp_pin4; 
+ Q64_B = tmp_pin5;
+ Q64_A = tmp_pin6;
 }
 
 void save_pin_values() 
 {
- tmp_pin4 = Q64_4;
- tmp_pin5 = Q64_5;
- tmp_pin6 = Q64_6;
+ tmp_pin4 = Q64_C;
+ tmp_pin5 = Q64_B;
+ tmp_pin6 = Q64_A;
+}
+
+void PLL1()
+{
+ save_pin_values();
+ Q64_A = 1;
+ delay_us(1);
+ Q64_A = 0;
+ restore_pin_values();
+}
+
+void PLL2()
+{
+ CPU_36_BIT128 = 1;
+ delay_us(1);
+ CPU_36_BIT128 = 0;
+}
+
+void counter_preset_enable()
+{
+Q64_C = 0;
+Q64_B = 1; 
+Q64_A = 1; 
+delay_us(1);
 }
 
 void beep()
 {
  save_pin_values();
- Q64_4 = 1;
- Q64_5 = 0;
- Q64_6 = 0;
+ Q64_C = 1;
+ Q64_B = 0;
+ Q64_A = 0;
  restore_pin_values();
 }
 
-void errorbeep(int beeps)
+void errorbeep(int8 beeps)
 {
-for (int i = 0; i < beeps; ++i)
-{delay_ms(200);beep(); delay_ms(200);}
+for (int8 i = 0; i <= beeps; ++i)
+{delay_ms(100);beep(); delay_ms(100);}
 }
 
-int set_dl(int dl_sw)
+void set_dl(dl)
 {
-//
-if (dl_sw == 1) //lock dial, return true
-{
-  dl = 1;
-  Q64_5 = 0;
-  Q64_6 = 1;
-  Q64_4 = 1;
-  return 1;
-}
-if (!dl_sw)
-{
-  dl = 0;
-  Q64_5 = 0;
-  Q64_4 = 0;
-  Q64_6 = 0;
-  return 0;
-}
-
+   if (dl == 1) //lock dial, return true
+   {
+      Q64_B = 0;
+      Q64_A = 1;
+      Q64_C = 1;
+   }
+   if (dl == 0)
+   {
+      Q64_B = 0;
+      Q64_C = 0;
+      Q64_A = 0;
+   }
 }
 
 void set_tx_inhibit(int res)
 {
-if(res == 1){ 
- Q64_5 = 1;
- Q64_4 = 1;
- Q64_6 = 0;
-}else if (res == 0)
-{
- Q64_4 = 0;
- Q64_5 = 0;
- Q64_6 = 0;
-}
+   if(res == 1)
+   {
+      Q64_B = 1;
+      Q64_C = 1;
+      Q64_A = 0;
+   }
+   if (res == 0)
+   {
+      Q64_C = 0;
+      Q64_B = 0;
+      Q64_A = 0;
+   }
 }
 
 void  display_send(int display_byte)
@@ -508,6 +566,7 @@ int32 tmp_value = value;
       else {d9 = 0;while(tmp_value > 0){tmp_value -= 1; d9+=1;}}
 }
 
+void load_10hz(int8 val10);
 void VFD_data(int8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int8 display_type)
 {    
 
@@ -541,6 +600,8 @@ void VFD_data(int8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int8
       if(display_type == 5) set_display_nibbles(d1,d2,15,15,15,0 ,15,15,d10); //eg 000 or 123 to the right
       
       oldcheck = (vfo_grid+2) + dcs_grid + value + channel_grid+1 + display_type + 1;
+      load_10hz(d9);
+      gtx = 0;
       #ifdef debug
       puts("updated display!");
       #endif
@@ -580,6 +641,28 @@ d3 = ch;
 VFD_data(d1, d2, freq, d3, fine_tune_display);
 }
 
+void load_10hz(int8 val10)
+{
+static int8 oldval;
+if(val10 != oldval) return;
+int8 loc10 = 112;
+PORTB = loc10 + val10;
+delay_us(10);
+      Q64_B = 1;
+      delay_us(10);
+      Q64_B = 0;
+oldval = val10;
+//printf("loaded 10");
+}
+
+void update_hz(int8 val100)
+{
+
+int8 loc100 = 112;
+PORTB = loc100 + val100+1;
+}
+
+
 
 void  PLL_REF()
 {
@@ -596,14 +679,14 @@ void  PLL_REF()
 //Latch4 Address = 64 (or 4<<4)
 
 //These are written to latches 6,5 and 4.
- PORTB = (6<<4) + 5; Q64_6 = 1; delay_us(10); Q64_6 = 0;                   //Latch6 = Bit2 = address + (5 in hex = 5). Could write this as 96+5
- PORTB = (5<<4) + 13; Q64_6 = 1; delay_us(10); Q64_6 = 0;                  //Latch5 = Bit1 = address + (13 in hex = D) or 80+13
- PORTB = (4<<4) + 12; delay_us(10); Q64_6 = 0;                             //Latch4 = Bit0 = address + (12 in hex = C) or 64+12
+ PORTB = (6<<4) + 0x5; PLL1();                  //Latch6 = Bit2 = address + (5 in hex = 5). Could write this as 96+5
+ PORTB = (5<<4) + 0xD; PLL1();                  //Latch5 = Bit1 = address + (13 in hex = D) or 80+13
+ PORTB = (4<<4) + 0xC; PLL1();                  //Latch4 = Bit0 = address + (12 in hex = C) or 64+12
 //5DC in hex = 1500
 
- PORTB = (6<<4) + 0; CPU_36_BIT128 = 1; delay_us(10); CPU_36_BIT128 = 0;   //Latch6 = Bit2 address + (0 in hex = 0) or 96+0
- PORTB = (5<<4) + 1; CPU_36_BIT128 = 1; delay_us(10); CPU_36_BIT128 = 0;   //Latch5 = Bit1 address + (1 in hex = 1) or 80+1
- PORTB = (4<<4) + 14; CPU_36_BIT128 = 1; delay_us(10); CPU_36_BIT128 = 0;  //Latch4 = Bit0 address + (14 in hex = E) or 64+14
+ PORTB = (6<<4) + 0; PLL2();                    //Latch6 = Bit2 address + (0 in hex = 0) or 96+0
+ PORTB = (5<<4) + 0x1; PLL2();                  //Latch5 = Bit1 address + (1 in hex = 1) or 80+1
+ PORTB = (4<<4) + 0xE; PLL2();                  //Latch4 = Bit0 address + (14 in hex = E) or 64+14
 //01E in hex = 30
 }
 
@@ -624,7 +707,6 @@ void update_PLL(int32 calc_frequency)
       
       //lock dial whilst tuning
       dltmp = dl; set_dl(1);
-      Q64_4 = 0; Q64_5 = 0; Q64_6 = 0;
       
       
       
@@ -644,7 +726,7 @@ void update_PLL(int32 calc_frequency)
       {
          if((offset_frequency >= PLL_band_bank[(i * 3)]) && (offset_frequency <= PLL_band_bank[(i * 3) + 1])) { PLLband = (PLL_band_bank[(i * 3) + 2]); break;}
       }
-      PORTB = PLLband; Q64_4 = 0; Q64_5 = 1; Q64_6 = 1; delay_us(10);
+      PORTB = PLLband; counter_preset_enable(); 
 
       //might as well check the stock band bank, so we dont jump stupid amounts if pressing band button after being on VFO
       for (i = 0; i < 10; i++)
@@ -678,9 +760,10 @@ void update_PLL(int32 calc_frequency)
       //If we are at, say, 7499.9 PLL1 will be at Max. If we go to 7500.0, PLL1 will be at minimum, but PLL2 will
       //increase to the next 500 step.
       
-      tmp_khz_freq +=560;
+      if(dmhz > 9) tmp_khz_freq +=560; //305 minimum - 1305 maximum lower and higher. lowest end of 500kc will go to 1306. highest end of 500kc will go to 304
+      else tmp_khz_freq +=560;
       //add on our 560 (start of N code ref is 560, so will count on from that. eg 0 = 560, 1 = 561 etc etc
-   
+      //305 + 256 = 561 actually
       // tmp_khz_freq becomes NCODE- this is final NCODE for PLL1. eg 27.78125 = 781... - 500 = 281...281 + 560 = 841 in decimal.
       
       //Lets set our NCODE addresses for both PLLs
@@ -719,58 +802,42 @@ void update_PLL(int32 calc_frequency)
       PLL2_NCODE_L0 = ((((tmp_band_freq / 5) + 12)-30) & 0xF);
       }
 
-       Q64_4 = 0; Q64_5 = 0; Q64_6 = 0;
-       PORTB = (3<<4) + PLL1_NCODE_L3;
-       Q64_6 = 1; delay_us(10); Q64_6 = 0; delay_us(10);
-       PORTB = (2<<4) + PLL1_NCODE_L2;
-       Q64_6 = 1; delay_us(10); Q64_6 = 0; delay_us(10);
-       PORTB = (1<<4) + PLL1_NCODE_L1;
-       Q64_6 = 1; delay_us(10); Q64_6 = 0; delay_us(10);
+       Q64_C = 0; Q64_B = 0; Q64_A = 0;
+       PORTB = 48 + PLL1_NCODE_L3;
+       PLL1();
+       PORTB = 32 + PLL1_NCODE_L2;
+       PLL1();
+       PORTB = 16 + PLL1_NCODE_L1;
+       PLL1();
        PORTB = 0 + PLL1_NCODE_L0;
-       Q64_6 = 1; delay_us(10); Q64_6 = 0; delay_us(10);
+       PLL1();
        
-       PORTB = (3<<4) + PLL2_NCODE_L3; // Prepare latch
-       CPU_36_BIT128 = 1; delay_us(10); CPU_36_BIT128 = 0; delay_us(10);
-       PORTB = (2<<4) + PLL2_NCODE_L2; // Prepare latch
-       CPU_36_BIT128 = 1; delay_us(10); CPU_36_BIT128 = 0; delay_us(10);
-       PORTB = (1<<4) + PLL2_NCODE_L1;
-       CPU_36_BIT128 = 1; delay_us(10); CPU_36_BIT128 = 0; delay_us(10);
+       PORTB = 48 + PLL2_NCODE_L3; // Prepare latch
+       PLL2();
+       PORTB = 32 + PLL2_NCODE_L2; // Prepare latch
+       PLL2();
+       PORTB = 16 + PLL2_NCODE_L1;
+       PLL2();
        PORTB = 0 + PLL2_NCODE_L0;
-       CPU_36_BIT128 = 1; delay_us(10); CPU_36_BIT128 = 0; delay_us(10);
-      
-      //shush the Q64 CPU lines
-      Q64_4 = 0;
-      Q64_5 = 0;
-      Q64_6 = 0;
-      delay_us(10);
-//load up 10hz + offset to send to BCD counter
-small:
+       PLL2();
 
-      PORTB = d10 ;
-      delay_us(10);
-      Q64_5 = 1;
-      delay_us(10);
-      Q64_5 = 0;
-      delay_us(10);
-      
-      PORTB = d100;
-      
-      
+       update_hz(d100);
+       
       oldcheck = calc_frequency;
       set_dl(dltmp);
       dl = dltmp;
       #ifdef debug
       puts("tuned PLL!");
-      printf("%d\r\n", PLL1_NCODE_L2);
-      printf("%d\r\n", PLL1_NCODE_L1);
-      printf("%d\r\n", PLL1_NCODE_L0);
-      printf("%d\r\n", PLL2_NCODE_L1);
-      printf("%d\r\n", PLL2_NCODE_L0);
-      //printf("%ld\r\n", calc_frequency);
+      #endif
+      //printf("%d%d%d\r\n", PLL1_NCODE_L2, PLL1_NCODE_L1, PLL1_NCODE_L0);
+      //printf("%d%d\r\n", PLL2_NCODE_L1, PLL2_NCODE_L0 );
+      
       //printf("%ld\r\n", offset_frequency);
       //printf("%d\r\n", PLLband);
-      #endif
+      
 }
+
+
 
 //we can combine dial lock, clarifier and split to one code, rather than 3. We will use the display truth table
 void process_dcs(int8 dcs_in)
@@ -850,10 +917,12 @@ void down_button()
       if(mem_channel > 0) --mem_channel;
       load_frequency(1);
       }
+#ifdef include_cb
       if(mem_mode == 2)
       {
       if(cb_channel > 1) --cb_channel;
       }
+#endif
    }
    else
    {
@@ -878,10 +947,12 @@ void up_button()
       if(mem_channel < 14) ++mem_channel;
       load_frequency(1);
       }
+#ifdef include_cb
       if(mem_mode == 2)
       {
       if(cb_channel < channel_amount) ++cb_channel;
       }
+#endif
    }
    else
    {
@@ -1008,14 +1079,16 @@ errorbeep(1);
 
 void toggle_speed_dial()
 {
+#ifdef include_dial_accel
 ++speed_dial;
-if(speed_dial > 2) speed_dial = 0;
+if(speed_dial > 1) speed_dial = 0;
 if(speed_dial == 0) VFD_special_data(5);
 if(speed_dial == 1) VFD_special_data(6);
 if(speed_dial == 2) VFD_special_data(7);
 force_update = 1;
 save_dial_n(speed_dial);
 errorbeep(1);
+#endif
 }
 
 
@@ -1078,10 +1151,10 @@ int8 buttonaction (int8 res)
       //toggle ports and counters to ensure we can TX
       for (int i = 0; i < 3; i++)
       {
-      Q64_4 = 1; Q64_5 = 1; Q64_6 = 1;
+      Q64_C = 1; Q64_B = 1; Q64_A = 1;
       PORTA = 0; PORTB = 0; PORTC = 0; PORTD = 0;
       delay_ms(50);
-      Q64_4 = 0; Q64_5 = 0; Q64_6 = 0;
+      Q64_C = 0; Q64_B = 0; Q64_A = 0;
       PORTA = 0; PORTB = 0; PORTC = 0; PORTD = 0;
       delay_ms(50);
       }
@@ -1160,8 +1233,6 @@ out:
     return res;
 }
 
-
-
 #ifdef include_dial_accel
 //here we set our dial timer ( or triggers). As the timer decreases, it will pass these threasholds
 //these dial timers can be anything lower than main dial timer. 
@@ -1171,7 +1242,7 @@ out:
 //basic tug-o-war between positive and negative pulses. Dial timers are in percentages / 10
 //screen MUST be refreshed immediately. Set update_display flag ( as below)
 
-#define dial_timer_max 1000 //max spin down-timer. All percentages are based of this. Default 1000
+#define dial_timer_max 5000 //max spin down-timer. All percentages are based of this. Default 1000
 //these are the trigger percentages. As dial_timer decreases, we will approach eg 80% of dialtimer, which is percent_of_d_timer_speed2.
 //We can change these percentages so different speeds happen earlier or later. Defaults 80, 60, 40, 20, 10.
 #define percent_of_d_timer_speed2 80 //default 80%
@@ -1180,10 +1251,14 @@ out:
 #define percent_of_d_timer_speed5 20 //default 20%
 #define percent_of_d_timer_speed6 10 //default 10%
 
-#define stop_reset_count 25 //stop spin check sampling count. How fast dial reverts to lowest increment. Higher - longer, Lower, shorter. Default 25
+#define stop_reset_count 5 //stop spin check sampling count. How fast dial reverts to lowest increment. Higher - longer, Lower, shorter. Default 25
 #define negative_pulse_sample_rate 200 //how often to check for negative pulse to fight against the decrement. Higher number means easier acceleration. Lower is harder (eg faster and harder). Default 200
 #define dial_timer_decrement 10 //overall timer decrement when spinning. How fast the main timker decreases. Default 10. Lower = longer spin before it speeds up. Not harder, just longer
 #define dial_timer_pullback 20 //dial increment when negative (eg when slowing down spinning). How hard we fight against the decrement. Needs to be more than decrement. Default 15. Lower = acceleration increments kick in earlier
+
+//these affect accelerated and non-accelerated dials. Its how sensitive it is. Higher numbers = less sensitive. If you have a sample of 1, you literally only have to breathe on it
+#define pulse_sample_fast 5 //normal tuning
+#define pulse_sample_slow 5 //fine tuning
 
    //dial output counts(the value returned - the MAIN variable for eg frequency
    //COSMETICS:-
@@ -1192,9 +1267,9 @@ out:
    //This is only a cosmetic thing. Feel free to round them up or down as you like
 //#define default_out_speed 5 //Slowest
 #define out_speed2 51      //Slightly faster
-#define out_speed3 211     //Faster still
-#define out_speed4 1111    //Super-fast
-#define out_speed5 5111   //Ultra-fast
+#define out_speed3 123     //Faster still
+#define out_speed4 567    //Super-fast
+#define out_speed5 1234   //Ultra-fast
 
 int16 freq_dial_accel_type1(int32 &value, int16 start_increment)
 {
@@ -1214,14 +1289,18 @@ int16 freq_dial_accel_type1(int32 &value, int16 start_increment)
    dial_timer4 = (dial_timer_max / 100) * percent_of_d_timer_speed5;
    dial_timer5 = (dial_timer_max / 100) * percent_of_d_timer_speed6;
    
-   if(!dial_clk)
+   int8 res1 = pind7;
+   int8 dial_clock;
+   if(dial_increment == 1) dial_clock = pulse_sample_slow; else dial_clock = pulse_sample_fast;
+   static int res2;
+   static int pulse = 0;
+   if((res1 && !res2) || (!res1 && res2)) {++pulse; res2 = pind7;}
+   if(pulse >= dial_clock)
    {
       tmp = dial_dir;
-      while(!dial_clk )
-      continue;
       if(tmp) value +=dial_increment; else value -=dial_increment;
    
-      stop_count = 0;
+      stop_count = 0; pulse = 0;
 
       if(dial_timer <dial_timer_pullback) dial_timer = dial_timer_pullback;
       if(dial_timer >= dial_timer_max) dial_timer = dial_timer_max;
@@ -1251,6 +1330,7 @@ int16 freq_dial_accel_type1(int32 &value, int16 start_increment)
       }
       
    }
+   res2 = pind7;
    ++count;
    if(count>negative_pulse_sample_rate) count = 0;
    //if (dial_timer < 300) dial_timer +=1;
@@ -1265,90 +1345,27 @@ return res;
 }
 #endif
 
-int16 freq_dial_accel_type2(int32 &value, int16 start_increment)
-{
-static int8 counterstart = 0;
-static int16 counter = 0;
-static int16 pulsecounter = 0;
-if(counter == 0) pulsecounter = 0;
-if(counterstart) ++counter;
-
-int res = 0;
-if(!dial_clk)
-   {
-      tmp = dial_dir;
-//!      while(!dial_clk )
-//!         continue;
-      ++pulsecounter;
-      counterstart = 1;    
-   } else res = 0; 
-if(counter == 500)
-{
-   counterstart = 0;
-   counter = 0;
-   if(fine_tune)
-   {
-   if(tmp)
-   {
-      if       ((pulsecounter > 0) && (pulsecounter <=3)) value += 1;
-      else if  ((pulsecounter > 3) && (pulsecounter <=5)) value += (100);
-      else if  ((pulsecounter > 5) && (pulsecounter <=7)) value += (1000);
-      else if  ((pulsecounter > 7) && (pulsecounter <=100)) value += (10000);
-   }
-   else 
-   {
-      if       ((pulsecounter > 0) && (pulsecounter <=3)) value -= 1;
-      else if  ((pulsecounter > 3) && (pulsecounter <=5)) value -= (100);
-      else if  ((pulsecounter > 5) && (pulsecounter <=7)) value -= (1000);
-      else if  ((pulsecounter > 7) && (pulsecounter <=100)) value -= (10000);
-   }
-   }
-   else
-   {
-   if(tmp)
-   {
-      if       ((pulsecounter > 0) && (pulsecounter <=3)) value += 5;
-      else if  ((pulsecounter > 3) && (pulsecounter <=4)) value += (100);
-      else if  ((pulsecounter > 4) && (pulsecounter <=5)) value += (1000);
-      else if  ((pulsecounter > 5) && (pulsecounter <=100)) value += (10000);
-   }
-   else 
-   {
-      if       ((pulsecounter > 0) && (pulsecounter <=3)) value -= 5;
-      else if  ((pulsecounter > 3) && (pulsecounter <=4)) value -= (100);
-      else if  ((pulsecounter > 4) && (pulsecounter <=5)) value -= (1000);
-      else if  ((pulsecounter > 5) && (pulsecounter <=100)) value -= (10000);
-   }
-   }
-//!   fine_tune_display = 1;
-//!   vfo_disp(active_vfo, dcs, pulsecounter, mem_channel);
-   if(pulsecounter == 0) return 0;
-   if((pulsecounter > 0) && pulsecounter <=3) return 1;
-   if(pulsecounter > 2) return 0;
-   
-}
-
-}
-
 int16 freq_dial_basic(int32 &value, int16 dial_increment)
 {
-   static int16 res = 0;
-   static int16 stop_count = 0;  
-   if(!dial_clk)
-   {
-      tmp = dial_dir;
-      while(!dial_clk )
-         continue;
-      if(tmp) value+=dial_increment; else value-=dial_increment;
-      stop_count = 0;
-      res = 1;    
-   } 
-   else ++stop_count;
-   if(stop_count < 5000) res = 1; else res = 0;
-   if(stop_count >= 5000) stop_count = 5000;
+   int8 res = 0;
+   int8 res1 = pind7;
+   int8 dial_clock;
+   if(dial_increment == 1) dial_clock = pulse_sample_slow; else dial_clock = pulse_sample_fast;
+   static int res2;
+   static int pulse = 0;
+   if((res1 && !res2) || (!res1 && res2)) {++pulse; res2 = pind7;}
+   if(pulse >= dial_clock)
+   
+      {
+         tmp = dial_dir;
+         if(tmp) value+=dial_increment; else value-=dial_increment;
+         res = 1;
+         pulse = 0;
+      }
+      
+   //if(res) putc(res);
    return res;
 }
-
 
 int8 misc_dial(int32 &value, int8 direction)
 {
@@ -1485,9 +1502,10 @@ force_update = 1;
 }
 #endif
 
-#ifdef include_mic_buttons
+
 void mic_button()
 {
+#ifdef include_mic_buttons
       static int cycle = 0;
       ++cycle;
       if(cycle < 8) return;
@@ -1551,8 +1569,8 @@ if(mem_mode == 0)
       }
    }
    if(res == 10) mrvfo_button();
-   if(res == 11) frequency += 1000;
-   if(res == 12) frequency -= 1000;
+   if(res == 11) frequency += 10000;
+   if(res == 12) frequency -= 10000;
    return;
 }
 
@@ -1578,12 +1596,12 @@ if(mem_mode == 1 || mem_mode == 2)
    if(mem_mode == 2)
    {
    if(res == 10) toggle_cb_region();
-#endif
    }
+   #endif
+}
+#endif
 }
 
-}
-#endif
 
 void transmit_check()
 {
@@ -1602,7 +1620,7 @@ if(!gen_tx)
          if(!valid)
          {
          set_tx_inhibit(1);
-         errorbeep(2);
+         beep();
          
          }
          gtx = 1;
@@ -1672,7 +1690,7 @@ if(sl)
 void set_defaults()
 {
       for (int i = 0; i < 20; i++)
-      {save32(i, 710000);}
+      {save32(i, 700000);}
       
       for (i = 20; i < 32; i++)
       {save32(i, 0);}
@@ -1681,7 +1699,7 @@ void set_defaults()
       save_mode_n(0); //Mem mode
       save_mem_ch_n(0); //Default mem channel
       save_fine_tune_n(0); //Fine-tuning display (disabled by default)
-      save_dial_n(1); //dial_accel/type 0 = disabled, 1 = type1, 2 = type2
+      save_dial_n(0); //dial_accel/type 0 = disabled, 1 = type1, 2 = type2
 #ifdef include_cb      
       save_cb_ch_n(19); //CB ch 1-80 on default channel
       save_cb_reg_n(0); //CB region 0-CEPT, 1 UK, 2 80CH (1-80) - CEPT 1-40, UK 41-80
@@ -1720,12 +1738,9 @@ start:
    if(load_checkbyte_n() != 1) {set_defaults(); goto start;}
    if(load_checkbyte_n() == 1) load_values();
 
-   //welcome beep
-   beep();
-   
    k1 = 1; delay_us(1);
-   if (pb0) gen_tx = 1;  // //widebanded?
-   else gen_tx = 0;
+   if (pb0) gen_tx = 0;  // //widebanded?
+   else gen_tx = 1;
    k1 = 0;
    
    #ifdef include_cat
@@ -1733,13 +1748,14 @@ start:
    enable_interrupts(int_rda); //toggle interrupts to ensure serial is ready
    enable_interrupts(global); //enable interrupts for CAT
    #endif
-
+   //frequency = 700000;
    load_frequency(mem_mode);
    vfo_disp(active_vfo, dcs, frequency, mem_channel);
    update_PLL(frequency);
    int8 dialres = 0;
    int8 counterstart = 0;
    int16 counter = 0;
+   int16 counter2 = 0;
    while(true)
    {
    #ifdef include_cat
@@ -1752,7 +1768,7 @@ start:
       }
   
    #endif
-
+      ++counter2;
       if(counterstart) ++counter;
       //mic buttons
       buttonaction(buttons());
@@ -1768,36 +1784,42 @@ start:
       if (!fine_tune) dialres = freq_dial_accel_type1(frequency, 5);
       else dialres = freq_dial_accel_type1(frequency, 1);
       }
-      if(speed_dial == 2)
-      {
-      if (!fine_tune) dialres = freq_dial_accel_type2(frequency, 5);
-      else dialres = freq_dial_accel_type2(frequency, 1);
-      }
+//!      if(speed_dial == 2)
+//!      {
+//!      if (!fine_tune) dialres = freq_dial_accel_type2(frequency, 5);
+//!      else dialres = freq_dial_accel_type2(frequency, 1);
+//!      }
       if(speed_dial == 0)
       {
-      if (!fine_tune) dialres = freq_dial_basic(frequency, 10);
+      if (!fine_tune) dialres = freq_dial_basic(frequency, 5);
       else dialres = freq_dial_basic(frequency, 1);
       }
          
  #else
-       if (!fine_tune) dialres = freq_dial_basic(frequency, 10);
+       if (!fine_tune) dialres = freq_dial_basic(frequency, 5);
        else dialres = freq_dial_basic(frequency, 1);
  #endif
       
+       int16 counterlimit;
+       if(dialres !=0) counter2 = 0;
+       if(dialres == 1) counterlimit = 5000;
+       if(dialres > 1) counterlimit = 0;
        if(dialres == 1) 
        {
        counterstart = 1;counter = 0; if(fine_tune) fine_tune_display = 1;
        }
-       if(counter > 5000)
+       if(counter > counterlimit)
        {
        counterstart = 0;
        counter = 0;
-       if(fine_tune) fine_tune_display = 0;
-       
-       if(mem_mode == 0 || mem_mode == 1) {save_vfo_f(active_vfo, frequency);}
-       
+       fine_tune_display = 0;
        }
        
+       if(counter2 > 10000) 
+       {
+       save_vfo_f(active_vfo, frequency);
+       counter2 = 0;
+       }
        check_limits();
        vfo_disp(active_vfo, dcs, frequency, mem_channel);
        }
