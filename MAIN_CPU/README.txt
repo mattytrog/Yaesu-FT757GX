@@ -1,5 +1,6 @@
 !!Compile with CCS compiler!!
 0.8b Changelog
+TESTED WITH REAL AND PIC BASED TMS2370 VFD DISPLAY DRIVER CHIPS
 Fixed incorrect Hz being sent to the mixers. This was because the pin we use for strobing the band data was being strobed too 
 quickly for the first digit, leading to almost an off-by-one (is that what its called?) error.
 Dial sampling changed to directly sense the feedback from the BCD counter, rather than the old dial pulse. Using the dial pulse is OK, but
