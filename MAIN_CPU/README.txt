@@ -1,4 +1,37 @@
 !!Compile with CCS compiler!!
+
+0.81b Changelog
+Initial PMS support. As follows:
+	With 500k pressed: Scanning of all saved MR channels. This is stock Yaesu behaviour I believe. How the clicking doesn't drive people mad though, I'll never know.
+	Press M>VFO or PMS to exit.
+	Without 500k pressed in:
+	If in VFO mode and you press PMS, scanning will take place between current band and next band.
+	If in MR mode, scanning will take place between current memory channel and next memory channel. If you scan from Channel E (last channel), the end channel will be channel 0
+	There will be a 3 second timeout after squelch closes before scanning continues
+	If in CB mode, all CB channels will be scanned (1 - 80), so both FCC/CEPT (1-40) and British(41-80)
+	To skip current frequency (in frequency scanning mode), nudge the VFO wheel to continue scanning
+	To switch off, press PMS switch again and the last scanned frequency will become VFO A
+
+Program MR memories over serial
+The memory command starts at E0 (for channel 0) to EE (channel 14)
+Assemble your command as follows: <100hz><10hz><10khz><1khz><100khz><mhz(under 10)><0><mhz(over 10)>
+Example:
+To save 12.345.67 (1234567) to memory 4, command would be 67452301E4
+To save 27.555.00 (2755500) to memory 8, command would be 00557502E8
+To save 7.315.00 (731500) to memory 12, command would be 00157300EC
+
+Fixed missing MR indicator in display
+Fixed band data not being sent correctly. Incorrect band could have been selected, which would be on-frequency, or miles off.
+Fixed incorrect line decoder command for the counter preset enable function. It was changing bands, rather than the counter.
+A twat move by me that I had forgotten to fix. My bad. I guess...
+All dials now sample the up/down counter now (apart from the CB channel dial, as its unnecessary)
+Changed refresh of display from refreshing every cycle (when a change is detected), to every 120 cycles. This has zero effect
+on the display and it permits us to increment the frequency in 10hz steps(yaesu spec), rather than 100hz. So in normal AND 
+fine-tune modes, the steps are 10hz as original, with hopefully brilliant speed
+Offset frequency setup is now far more sensitive and "accurate", being based of the up/down counter
+
+========================================
+
 0.8b Changelog
 TESTED WITH REAL AND PIC BASED TMS2370 VFD DISPLAY DRIVER CHIPS
 Fixed incorrect Hz being sent to the mixers. This was because the pin we use for strobing the band data was being strobed too 
@@ -11,13 +44,6 @@ Removed type 2 dial. It was crap.
 Fixed VFO not being saved, unless there was a pulse on the dial
 Fixed TX inhibit vulnerability where you could change the frequency and transmit, thus defeating the switch behind front panel by just pressing MIC button
 
-
-
-0.76b Changelog
-Fixed weird bug where the CAT datastream digits would become misaligned (compiler optimisation doing it?)
-Just changing all buffered bytes to int32s corrected it. Even though the bytes are obviously under int32 (they are int8),
-they were becoming misaligned, resulting in the LSBs (bytes 2 & 1) of the CAT stream getting "lost" during the frequency multiplication calculation.
-Looks like they were added elsewhere (or lost), resulting in lower frequency being displayed
 ========================================
 
 2/11/24 v0.75b hex and source added again
