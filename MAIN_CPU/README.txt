@@ -10,7 +10,7 @@ Initial PMS support. As follows:
 	There will be a 3 second timeout after squelch closes before scanning continues
 	If in CB mode, all CB channels will be scanned (1 - 80), so both FCC/CEPT (1-40) and British(41-80)
 	To skip current frequency (in frequency scanning mode), nudge the VFO wheel to continue scanning
-	To switch off, press PMS switch again and the last scanned frequency will become VFO A
+	To switch off, press PMS switch again (or open the squelch and press M>VFO as Yaesu stock) and the last scanned frequency will become VFO A
 
 Program MR memories over serial
 The memory command starts at E0 (for channel 0) to EE (channel 14)
