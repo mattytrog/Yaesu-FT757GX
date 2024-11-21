@@ -1,5 +1,11 @@
 !!Compile with CCS compiler!!
 
+0.82b Changelog
+Fixed weird counter bug that would make the display show 6.9999 instead of 7.0000(the frequency was correct, it just automatically retarded the frequency)
+Program dial speeds over serial (see graphic). Dial speeds also apply to microphone speeds too
+Changed dial to 10khz(approx) per revolution. Before, it would do 10khz but only if you turned ultra-slowly. It was more like 5khz per revolution. Yaesu spec is 10khz per revolution.
+Changed dial counter to 40000, instead of 20000. I felt the acceleration was kicking in too early.
+
 0.81b Changelog
 Initial PMS support. As follows:
 	With 500k pressed: Scanning of all saved MR channels. This is stock Yaesu behaviour I believe. How the clicking doesn't drive people mad though, I'll never know.
