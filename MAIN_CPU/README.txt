@@ -1,5 +1,25 @@
 !!Compile with CCS compiler!!
 
+0.83b Changelog
+Mostly a minor update. Reworked the mic button code.
+In VFO mode:
+Press FAST once to increase band (it loops)
+Hold FAST until 2 beeps are heard, to change to MR mode
+
+In MR mode:
+Hold FAST until 2 beeps are heard, to change to CB mode (if using the CB version of course). If you are not using the CB version, holding FAST will put you back to VFO mode
+
+In CB mode:
+Press FAST once to change region (CE or B) - CEPT or British
+Hold FAST until 2 beeps are heard, to go back to VFO mode
+
+Up and down works as you would expect. Press FAST AND your up/down button to go fast. You will probably already be pressing up/down, so just press FAST too. No need to let go of anything.
+
+Other stuff:
+FINALLY fixed the 6.9999 bug. I thoght I'd fixed in in 0.82 but I was changing the wrong thing. It was thinking the dial had an input.
+
+Normal tuning is 10khz per revolution. Fine tuning is 5khz per revolution.
+
 0.82b Changelog
 Fixed weird counter bug that would make the display show 6.9999 instead of 7.0000(the frequency was correct, it just automatically retarded the frequency)
 Program dial speeds over serial (see graphic). Dial speeds also apply to microphone speeds too
