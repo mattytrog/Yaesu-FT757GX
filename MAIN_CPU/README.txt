@@ -1,5 +1,16 @@
 !!Compile with CCS compiler!!
 
+0.85b Changelog
+All 0.84 additions
+PMS system improved: (Without 500k button) CB scanning - Scan current programmed region 1-40... With 500k button - 80 channel CB scan (both regions)
+Option for accelerate microphone in source. Disabled by default. It can be annoying
+
+0.84a Experimental Changelog
+New 10hz counting method. The whole CPU system now uses the up/down counter as a comparator, with the pulse as a sense to tell if dial is spinning.
+This has resulted in a 10hz resolution possible on the microphone, which wasn't possible under this firmware, or firmware by others
+Microphone steps have been changed to Yaesu stock (10hz), with a time-based acceleration function.
+My bench frequency counter only has 25hz resolution for some reason, so ive tested it on the scope and it is working fine in my tests.
+
 0.83b Changelog
 Mostly a minor update. Reworked the mic button code.
 In VFO mode:
