@@ -1,5 +1,14 @@
 !!Compile with CCS compiler!!
 
+0.9b Changelog
+Happy 2025! Time this firmware had a name I think...
+CHANGE: Made acceleration dial more predictable and less insane. Values can still be changed over serial
+BUGFIX: Going in to offset programming the first time works as expected, however further attempts would result in incorrect garbage data and offsets. This was because of loading the saved offset without the direction marker
+(which is offset value + 1 million... The direction of the offset wasn't being taken into account(eg removing of the 1 million marker). This is now fixed.
+PMS further improved. Last scanned channel / mem channel / CB channel / frequency is stored to cache, rather than going back to the previous pre-PMS value
+When in VFO mode, push in 500k, then press PMS. Current band will be scanned. Band plans are correct as of 25/01/25. eg on 40 meters, 7.0mhz to 7.2mhz will be scanned... 80 meters, 3.5 to 3.8 etc etc
+For standard scan, eg from 7.0mhz to next yaesu "band", which is 10.1mhz press 500k again.
+
 0.85b Changelog
 All 0.84 additions
 PMS system improved: (Without 500k button) CB scanning - Scan current programmed region 1-40... With 500k button - 80 channel CB scan (both regions)
