@@ -1,3 +1,6 @@
+![alt text](https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png?raw=true)
+
+
 !!Compile with CCS compiler!!
 
 0.9b Changelog
