@@ -6,22 +6,24 @@
 
 0.95b Changelog
 
+NAME: FTplus FT757GX version
+
 NEW FEATURE: ZERO BIT SET (Off-frequency correction):
 
-Two modes possible. Hold VFO<>M to change these modes. 2 beeps = single offset, 3 beeps = per-band offset(default single offset)
+Two modes possible. Hold VFO<>M to change these modes. 2 beeps = single offset, 3 beeps = per-band offset(default single offset). 
 In single offset mode, there is one global offset across all bands, as we have been using.
 In Per-band offset mode, you can set different offsets per band. You can set these up PER MODE. eg you can align 7mhz based on LSB with one offset and 14mhz for another one
 
 IMPROVEMENTS: MEMORY MANAGEMENT:
 
-Code completely rewritten for less ambiguity. Confirmation beeps and a blink of the chosen memory channel when saving
+Code completely rewritten for less ambiguity. Confirmation beeps and a blink of the chosen memory channel when saving. 
 When in VFO mode, you can change which channel you save to WITHOUT entering MR mode. Just hold down BAND UP or BAND DOWN until it beeps and the display flashes your new channel
 When in MR mode, you can treat the tuning dial as a third VFO(Starting from your saved frequency obviously). Tune up and down, without affecting VFO A or B. To change bands, hold BAND UP or BAND DOWN until it beeps and band changes
 VFO<>M, VFO>M and M>VFO all work regardless of mode now (apart from CB of course)
 
 SERIAL IMPROVEMENTS:
 
-Hold VFO A/B during power on (so hold VFO A/B THEN power on), to transmit a help screen over serial, outlining the command set
+Hold VFO A/B during power on (so hold VFO A/B THEN power on), to transmit a help screen over serial, outlining the command set. 
 Easy serial frequency setting option. Enter your frequency, ordinarily, followed by 0F...eg 070000000F to set 7mhz... 277812500F to set 2778125. Remember the 0F at the end and any zeroes if frequency is under 10mhz
 Easy memory programming. Same as easy serial, but instead of 0F at the end, put a value between 10 and 1E (0 and E). eg to save 7mhz to channel 7, you would enter 0700000017
 You can also type "help0" as ASCII to print the command set once again, (or power cycle the radio, holding VFO A/B7)
