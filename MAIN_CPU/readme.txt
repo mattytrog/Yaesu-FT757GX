@@ -1,4 +1,4 @@
-!(https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png)
+![Alt text](https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png?raw=true) "Quick Start"
 
 
 !!Compile with CCS compiler!!
