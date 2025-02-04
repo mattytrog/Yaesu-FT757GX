@@ -1,5 +1,5 @@
-![Alt text](https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png?raw=true) "Quick Start"
-
+![Alt text](https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png?raw=true)
+!(https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png)
 
 !!Compile with CCS compiler!!
 
@@ -22,6 +22,7 @@ Easy serial frequency setting option. Enter your frequency, ordinarily, followed
 Easy memory programming. Same as easy serial, but instead of 0F at the end, put a value between 10 and 1E (0 and E). eg to save 7mhz to channel 7, you would enter 0700000017
 You can also type "help0" as ASCII to print the command set once again, (or power cycle the radio, holding VFO A/B7)
 FREQUENCIES MUST BE 8 BYTES TO BE ACCEPTED, PLUS THE COMMAND AT THE END, MAKING 10 BYTES.
+
 =================================================================================================
 
 0.9b Changelog
