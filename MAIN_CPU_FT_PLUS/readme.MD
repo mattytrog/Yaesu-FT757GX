@@ -16,7 +16,7 @@ This requires a connection to the RS232 TX. You can either use the Mic Down pin 
 
 This will then give you serial TX/RX out of the CAT port. You will lose AGC on the cat port obviously, but who cares?
 
-Switch rig off... Hold VFO A/B... Switch on to change modes. The rig will beep until it is power cycled. Mode change complete. 
+Switch rig off... Hold VFO A/B... Switch on to change modes. The rig will beep until it is power cycled. This changes between Yaesu and Kenwood modes. Default is Yaesu. Mode change complete. 
 
 =================================================================================================
 
