@@ -3,26 +3,30 @@
 
 !!Compile with CCS compiler!!
 
+
+0.98b Changelog
+FEATURE: PTT VIA CAT. Very slight, easy modification and PTT via CAT will work natively (in Kenwood mode only!). Ideal for WSJT-X etc
+
+BUGFIX: Hamlib will work now. Corrected sending 36 characters rather than 37
+
+BUGFIX: If cycling between VFO A and VFO B rapidly, frequencies could become mixed up. This was due to the cached frequency taking too long to get saved to VFO "slot". Fixed.
+
+IMPROVEMENTS: BCD counter logic redone CORRECTLY. Rather than activating C,B and A separately, its done at PORT level. This needed flipping around the data toggles as natively, they are backwards.
+
+=================================================================================================
+
 0.97b Changelog
 
 FIXES:
-
 More refinement to Kenwood mode. Missing FLRIG required commands added (FR, FT)
-
-=================================================================================================
 
 0.96b Changelog
 
 NEW FEATURE: Kenwood CAT emulation
-
 Emulates a Kenwood TS140, enabling tuning of radio both ways. VFO wheel movements are reflected in the app of your choice.
-
 VFO A/B tuning supported, dummy mode change (just make sure you change the mode switch accordingly), memory modes "should" be supported too but cannot test as I'm only using FLRIG
-
 This requires a connection to the RS232 TX. You can either use the Mic Down pin (Pin 3 on MIC connector), or cut the wire of J11 pin 5 (AGC out) and connect to the TX header on the CPU.
-
 This will then give you serial TX/RX out of the CAT port. You will lose AGC on the cat port obviously, but who cares?
-
 Switch rig off... Hold VFO A/B... Switch on to change modes. The rig will beep until it is power cycled. This changes between Yaesu and Kenwood modes. Default is Yaesu. Mode change complete. 
 
 
