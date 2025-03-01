@@ -1,11 +1,13 @@
-![Alt text](https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/readme.png?raw=true)
-!(https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png)
-
-!!Compile with CCS compiler!! 
 !! PLEASE PLEASE PLEASE READ THE SUPPLEMENT!! ALL THE INFO YOU NEED IS IN THERE, NOT HERE!   
 !! BOOTLOADER FACILITY ADDED FROM v1.3.  
 !! IF UPGRADING VIA BOOTLOADER, USE BOOTLOADER_VERSION  
 !! IF PROGRAMMING WITH PICKIT, OR OTHER PROGRAMMER, USE PICKIT VERSION  
+
+![Alt text](https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/readme.png?raw=true)
+!(https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png)
+
+!!Compile with CCS compiler!! 
+
 
 v1.3 Changelog  
 FEATURE: VFO Button Tuning  
