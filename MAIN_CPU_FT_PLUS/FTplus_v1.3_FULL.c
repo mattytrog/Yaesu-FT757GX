@@ -13,8 +13,8 @@
 //SUMMARY: IE1; = Transceiver ID over CAT enable. IE0; = Transceiver ID over CAT disable (default).
 
 #include <18F452.h>
-#include <bootloader.h>
-#fuses HS,PUT, NOWDT,NOPROTECT,NOLVP, BORV42
+//#include <bootloader.h>
+#fuses HS,PUT, NOWDT,NOPROTECT,NOLVP, BORV27
 #use delay(clock=20000000)
 #use rs232(baud=4800, xmit=PIN_C6, rcv=PIN_C7, parity=N, stop=2, ERRORS)
 //#org 0x7D00, 0x7FFF {} //For bootloader
