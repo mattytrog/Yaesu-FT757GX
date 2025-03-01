@@ -1,8 +1,22 @@
 ![Alt text](https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/readme.png?raw=true)
 !(https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU/readme.png)
 
-!!Compile with CCS compiler!!
+!!Compile with CCS compiler!! 
+!! PLEASE PLEASE PLEASE READ THE SUPPLEMENT!! ALL THE INFO YOU NEED IS IN THERE, NOT HERE!   
+!! BOOTLOADER FACILITY ADDED FROM v1.3.  
+!! IF UPGRADING VIA BOOTLOADER, USE BOOTLOADER_VERSION  
+!! IF PROGRAMMING WITH PICKIT, OR OTHER PROGRAMMER, USE PICKIT VERSION  
 
+v1.3 Changelog  
+FEATURE: VFO Button Tuning  
+IMPROVEMENTS: Now using a display buffer. Saved 10%+ space in ROM  
+BUGFIXES: KENWOOD EMULATION: PTT mode in Kenwood emulation sometimes wasn't triggered. This was due to wrong amount of commands being scanned and some switch/case errors  
+Also TX works correctly up to 115200 baud now. VFO A and B are correct now hopefully and shouldn't overwrite each other. Timeout errors are hopefully dealt with now.  
+BUGFIXES: Sending transceiver ID is hit or miss at the best of times. This requirement varies between apps. I haven't found any that actually NEED it, so it is disabled  
+by default. If you need it, (all it does is send "ID006;"), then it can be enabled. Simply send IE1; over serial to enable. IE is <I>D <E>nable. To disable, send IE0;  
+SUMMARY: IE1; = Transceiver ID over CAT enable. IE0; = Transceiver ID over CAT disable (default).  
+
+=================================================================================================  
 
 0.98b Changelog  
 FEATURE: PTT VIA CAT. Very slight, easy modification and PTT via CAT will work natively (in Kenwood mode only!). Ideal for WSJT-X etc  
@@ -12,8 +26,6 @@ BUGFIX: Hamlib will work now. Corrected sending 36 characters rather than 37
 BUGFIX: If cycling between VFO A and VFO B rapidly, frequencies could become mixed up. This was due to the cached frequency taking too long to get saved to VFO "slot". Fixed.  
 
 IMPROVEMENTS: BCD counter logic redone CORRECTLY. Rather than activating C,B and A separately, its done at PORT level. This needed flipping around the data toggles as natively, they are backwards.  
-
-=================================================================================================
 
 0.97b Changelog  
 
