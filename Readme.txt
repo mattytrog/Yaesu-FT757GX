@@ -1,31 +1,9 @@
-HAPPY NEW YEAR!
-v0.9b of processor firmware now available
-
-=================================================================
-
 Replacement chipset for the FT757GX transceiver
 
-Features:
+For display CPU, choose DISPLAY_CPU_TMS_2370 folder. Thanks to Rudolf Kauls.
 
-Easy to build and program, using a choice of different board gerbers
+For FTPlus, choose MAIN_CPU_FT_PLUS. READ THE SUPPLEMENT!!! THIS IS NOT OPTIONAL!!!
 
-Main CPU
-A custom firmware including some new features over stock:
+For the replacement light bar, go into METER LIGHT BAR
 
-CB radio system
-Enhanced PMS scanning
-Fine tuning
-Accelerated VFO dial
-Off-frequency adjustment for out of tune radios
-More memories
-More CAT command features
-
-+more
-
-All open source.
-
-Credits: 
-
-CPU code and gerbers: M. Bostock
-Testing, research and bug-hunting: S. Souza
-PLL diagrams, initial circuitry: D Keogh
+Cheers
