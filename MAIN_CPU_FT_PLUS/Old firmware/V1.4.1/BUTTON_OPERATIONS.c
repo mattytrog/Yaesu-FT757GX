@@ -17,12 +17,10 @@ void clarifier_button(INT8 state)
 
 void up_down(int1 updown, INT8 state)
 {
-   beep();
    IF(state  < 3)
    {
       IF( ! sw_500k)
       {
-         save_band_vfo_f(active_vfo, band, frequency);
          IF( ! updown)
          {
             IF(band  == 0)band = 9;
@@ -34,8 +32,8 @@ void up_down(int1 updown, INT8 state)
             IF(band  == 9)band = 0;
             ELSE ++band;
          }
-         
-         save8(band_n,band);
+
+         save_band_n(band);
          frequency = load_band_vfo_f(active_vfo, band);
          cat_storage_buffer[0] = load_band_vfo_f(0, band);
          cat_storage_buffer[1] = load_band_vfo_f(1, band);
@@ -189,10 +187,10 @@ void micfst(INT8 state)
                IF(state  == 4){toggle_cb_region(); }
                #endif
 }
-void manual_adjust_frequency();
+
 void micfst_hold(int8 state)
 {
-            IF(state  < 3)manual_adjust_frequency();
+            IF(state  < 3)mem_op(1);
             IF(state  == 3){mem_op(5); }
             IF(state  == 4){mem_op(5); }
             
@@ -222,9 +220,10 @@ void micdn_fst_hold(INT8 state)
    IF(state  < 3)frequency -= 100;
 }
 
-void LONG_press_clarifier() {beep(); program_offset();}
+void LONG_press_clarifier() {program_offset();}
 void LONG_press_mvfo() {toggle_speed_dial();}
-
+void LONG_press_vfoab() {reset_checkbyte_n(); reset_cpu();}
+void manual_adjust_frequency();
 
 void LONG_press_dl()
 {
@@ -240,7 +239,6 @@ void LONG_press_dl()
 
 void LONG_press_vfom()
 {
-   errorbeep(3);
    for(INT i  = 30; i <= 40; i++)
    {save32(i, band_bank[i - 30]); }
    FOR(i  = 41; i <= 51; i++)
@@ -271,7 +269,7 @@ void LONG_press_split()
    }
    errorbeep(cb_region + 1);
    
-   save8(cb_reg_n, cb_region);
+   save_cb_reg_n(cb_region);
 
    #endif
 }
@@ -307,14 +305,15 @@ int8 buttonaction (INT8 res, int8 increment)
       case 32: LONG_up_down(0, state); break;
       case 33: LONG_up_down(1, state); break;
       case 34: LONG_press_mvfo(); break;
-      //case 35: LONG_press_vfoab(); break;
+      case 35: LONG_press_vfoab(); break;
       case 36: LONG_press_dl(); break;
       case 37: LONG_press_vfom(); break;
       case 38: LONG_press_mrvfo(); break;
       case 39: LONG_press_split(); break;
       case 40: LONG_press_swap(); break;
-      //default: RETURN 0; break;
+      default: RETURN 0; break;
    }
+
    force_update = 1;
    RETURN res;
 }
@@ -356,27 +355,9 @@ int8 buttons(INT8 option)
                   rtnres = btnres + 30;
                   btnres = 0;
                   
-                  k1 = 0; k2 = 0; k4 = 0; k8 = 0;
+                  k2 = 0; k4 = 0; k8 = 0;
                   
                   count = 0;
-                  RETURN rtnres;
-               }
-              
-            }
-            
-            IF(option == 3)
-            {
-               if(count < holdcount) {++count; delay_ms(countdelay); return 0xFF;}
-               IF(count >= holdcount)
-               {
-                  rtnres = btnres + 30;
-                  //btnres = 0;
-                  
-                  k1 = 0; k2 = 0; k4 = 0; k8 = 0;
-                  k1 = 1;k2 = 1; k4 = 1; k8 = 1; delay_us(ondelay);
-                  IF((!pb2)&&(!pb1)&&(!pb0)) count = 0;
-                  k1 = 0; k2 = 0; k4 = 0; k8 = 0;
-                  
                   RETURN rtnres;
                }
               
@@ -403,32 +384,24 @@ int8 buttons(INT8 option)
          {
             if(option == 2)
             {
-               rtnres= micres;
-               micres = 0;
-               mic_down = 0;
-               return rtnres;
+            rtnres= micres;
+            micres = 0;
+            mic_down = 0;
+            return rtnres;
             }
             
             IF(option == 1)
             {
-               if(mic_count < holdcountmic) {++mic_count;}
-               if(mic_count >= holdcountmic) 
-               {
-               rtnres = micres + 5;
-               mic_down = 1;
-               RETURN rtnres;
-               }
+            if(mic_count < holdcountmic) ++mic_count;
+            if(mic_count >= holdcountmic) 
+            {
+            if(micres) rtnres = micres + 5;
+            else rtnres = 0;
+            mic_down = 1;
+            
+            RETURN rtnres;
             }
             
-            IF(option == 3)
-            {
-               if(mic_count < holdcountmic) {++mic_count; return 0xFF;}
-               if(mic_count >= holdcountmic) 
-               {
-               rtnres = micres + 5;
-               mic_down = 1;
-               RETURN rtnres;
-               }
             }
          }
           else

@@ -73,7 +73,6 @@ int8 program_mem_scan(int1 man_tune, INT32 curr_freq)
          vgrid = 2;
          dwell = VFO_dwell_time;
       }
-#ifdef include_cb
    if (scanstate == 4)
       {
          if(cb_region == 2) limit = 80; else limit = 40;
@@ -84,7 +83,6 @@ int8 program_mem_scan(int1 man_tune, INT32 curr_freq)
          vgrid = 2;
          dwell = CB_dwell_time;
       }
-#endif
    if (scanstate == 5)
       {  
          limit = 14;
@@ -126,29 +124,18 @@ int8 program_mem_scan(int1 man_tune, INT32 curr_freq)
       IF (counterstart) ++counter;
       ++counter2; ++counter1;
       
-      if(incstate == 0)
+      IF (counter2 > counter2max)
       {
-         IF (counter2 > vfo_button_tuning_flash_speed)
-         {
-            IF (flash) flash = 0; else flash = 1;
-            counter2 = 0;
-         }
+         IF (flash) flash = 0; else flash = 1;
+         counter2 = 0;
+      }
       
-      }
-      else
-      {
-         IF (counter2 > counter2max)
-         {
-            IF (flash) flash = 0; else flash = 1;
-            counter2 = 0;
-         }
-      }
       if(incstate == 0)
       {
          switch(flash)
          {
-            case 1: VFD_data (0xFF, 0xFF, curr_freq, 0xFF, 1,0,0, 0) ; break;
-            case 0: VFD_data (0xFF, 0xFF, 0, 15, 0,0,0, 0) ; break;
+            case 1: VFD_data (0xFF, 0xFF, curr_freq, 0xFF, 1,0,0, 1) ; break;
+            case 0: VFD_data (0xFF, 0xFF, 0, 15, 0,0,0, 1) ; break;
          }
       }
       
@@ -178,11 +165,10 @@ int8 program_mem_scan(int1 man_tune, INT32 curr_freq)
             case 0: VFD_data (0xFF, 0xFF, curr_freq, curr_mem_ch, 0,0,0, 1) ; break;
          }
       }
-#ifdef include_cb      
+      
       if(incstate == 2) curr_freq = load_cb(curr_mem_ch, cb_region);
-#endif
       if(incstate == 3) curr_freq = load_mem_ch_f(curr_mem_ch);
-      curr_freq = update_PLL(curr_freq);
+      update_PLL(curr_freq);
       tx_oob_check(curr_freq);
       
       
@@ -192,10 +178,12 @@ int8 program_mem_scan(int1 man_tune, INT32 curr_freq)
          {
             res = buttons (2);
             
-            IF (res){ counter2 = 0; flash = 1; VFD_data (0xFF, 0xFF, curr_freq, 0xFF, 1,0,0, 0) ; }
+            IF (res){ counter2 = 0; flash = 1; VFD_data (0xFF, 0xFF, curr_freq, 0xFF, 1,0,0, 1) ; }
             
-            IF ( (res == 3)|| (res == 11)) curr_freq += 1000;
-            IF ( (res == 2)|| (res == 12)) curr_freq -= 1000;
+            IF ( (res == 3)|| (res == 11)) curr_freq += 100;
+            IF ( (res == 2)|| (res == 12)) curr_freq -= 100;
+            if(curr_freq > max_freq) curr_freq = max_freq;
+            if(curr_freq < min_freq) curr_freq = min_freq;
             IF ( (res == 5)|| (res == 6) || (res == 13)) {frequency = curr_freq; pms = 0; break; }
          
          }
@@ -251,9 +239,7 @@ int8 program_mem_scan(int1 man_tune, INT32 curr_freq)
    if(squelch_open)
    {
    frequency = curr_freq;
-#ifdef include_cb
    if(incstate == 2) {cb_channel = curr_mem_ch; }
-#endif
    if(incstate == 3) {mem_channel = curr_mem_ch; }
    get_state();
    }

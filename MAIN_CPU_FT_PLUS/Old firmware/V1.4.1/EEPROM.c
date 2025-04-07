@@ -29,43 +29,59 @@ unsigned int32 read32(INT8 address)
 void save32(INT8 base, int32 value)
 {
    //
-#ifdef store_to_eeprom
-   write32 (base * 4, value);
-#ELSE
-   ram_bank[base] = value;
-#endif
+   IF(eeprom_enabled)
+   {
+      write32 (base * 4, value);
+   }
+
+   ELSE
+   {
+      ram_bank[base] = value;
+   }
 }
 
 int32 load32(INT8 base) 
 {
-#ifdef store_to_eeprom
+   IF(eeprom_enabled)
+   {
       RETURN read32(base * 4);
-#ELSE
+   }
+
+   ELSE
+   {
       RETURN ram_bank[base];
-#endif
+   }
 }
 
 void save8(INT8 base, int8 value)
 {
    //
-#ifdef store_to_eeprom
+   IF(eeprom_enabled)
+   {
       INT8 temp_data = read_eeprom(base + 0xE0);
       if(temp_data == value) RETURN;
       write_eeprom(base + 0xE0, value);
       #ifdef eeprom_save_debug8
       beep();
       #endif
-#ELSE
+   }
+
+   ELSE
+   {
       var_bank[base] = value;
-#endif
+   }
 }
 
 int8 load8(INT8 base) 
 {
-#ifdef store_to_eeprom
+   IF(eeprom_enabled)
+   {
       RETURN read_eeprom(base + 0xE0);
-#ELSE
+   }
+
+   ELSE
+   {
       RETURN var_bank[base];
-      #endif
+   }
 }
 

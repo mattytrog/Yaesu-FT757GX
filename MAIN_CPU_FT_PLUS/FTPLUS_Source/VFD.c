@@ -48,76 +48,45 @@ void send_disp_buf(INT1 fast_update)
 
 void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1 zeroes, int8 blank_digit, int8 display_type, int1 fast_update)
 {
-   
+   int8 g3,g4,g5,g6,g7,g8,g9;
    if(vfo_grid != 0xFF) disp_buf[4] = vfo_grid; else disp_buf[4] = 15;
    if(dcs_grid != 0xFF) disp_buf[5] = dcs_grid; else disp_buf[5] = 15; 
    if(channel_grid != 0xFF) disp_buf[12] = channel_grid; else disp_buf[12] = 15;
    split_value (value, d3, d4, d5, d6, d7, d8, d9);
    
-   if(blank_digit)
+   g3 = d3; g4 = d4; g5 = d5; g6 = d6; g7 = d7; g8 = d8; g9 = d9;
+   if(!zeroes)
    {
-         if (display_type == 0)
-         {
-         if((blank_digit >=1) && (blank_digit <= 6))
-         IF (value < 1000000) disp_buf[6] = 0; else disp_buf[6] = d3;
-         IF (value < 100000) disp_buf[7] = 0; else disp_buf[7] = d4;
-         IF (value < 10000) disp_buf[8] = 0; else disp_buf[8] = d5;
-         IF (value < 1000) disp_buf[9] = 0; else disp_buf[9] = d6;
-         if (value < 100) disp_buf[10] = 0; else disp_buf[10] = d7;
-         if (value < 10) disp_buf[11] = 0; else disp_buf[11] = d8;
-         
-         if(blank_digit == 9) disp_buf[6] = 15;
-         if(blank_digit == 10) disp_buf[7] = 15;
-         if(blank_digit == 11) disp_buf[8] = 15;
-         if(blank_digit == 12) disp_buf[9] = 15;
-         if(blank_digit == 13) disp_buf[10] = 15;
-         if(blank_digit == 14) disp_buf[11] = 15;
-         }
-         
-         if(display_type == 1)
-         {
-         if((blank_digit >=1) && (blank_digit <= 7))
-         //IF (value < 1000000) disp_buf[6] = 0; else disp_buf[6] = d3;
-         IF (value < 100000) disp_buf[6] = 0; else disp_buf[6] = d4;
-         IF (value < 10000) disp_buf[7] = 0; else disp_buf[7] = d5;
-         IF (value < 1000) disp_buf[8] = 0; else disp_buf[8] = d6;
-         if (value < 100) disp_buf[9] = 0; else disp_buf[9] = d7;
-         if (value < 10) disp_buf[10] = 0; else disp_buf[10] = d8;
-         if (value < 1) disp_buf[11] = 0; else disp_buf[11] = d9;
-         
-//!         if(blank_digit == 8) disp_buf[6] = 15;
-//!         if(blank_digit == 9) disp_buf[7] = 15;
-//!         if(blank_digit == 10) disp_buf[8] = 15;
-//!         if(blank_digit == 11) disp_buf[9] = 15;
-//!         if(blank_digit == 12) disp_buf[10] = 15;
-         if(blank_digit == 15) disp_buf[11] = 15;
-         }
-         
-   }
-   if(!blank_digit)
-   {
-   IF (display_type == 0){disp_buf[6] = d3; disp_buf[7] = d4; disp_buf[8] = d5; disp_buf[9] = d6; disp_buf[10] = d7; disp_buf[11] = d8; }
-   IF (display_type == 1){disp_buf[6] = d4; disp_buf[7] = d5; disp_buf[8] = d6; disp_buf[9] = d7; disp_buf[10] = d8; disp_buf[11] = d9; }
-   IF (display_type == 2){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = d7; disp_buf[9] = d8; disp_buf[10] = d9; disp_buf[11] = 15; }
-   IF (display_type == 3){disp_buf[6] = d7; disp_buf[7] = d8; disp_buf[8] = d9; disp_buf[9] = 15; disp_buf[10] = 15; disp_buf[11] = 15; }
-   IF (display_type == 5){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = 0; disp_buf[10] = 15; disp_buf[11] = 15; }
-   
-   IF (display_type == 6){disp_buf[6] = 1; disp_buf[7] = 15; disp_buf[8] = d7; disp_buf[9] = d8; disp_buf[10] = d9; disp_buf[11] = 15; }
-   IF (display_type == 7){disp_buf[6] = 2; disp_buf[7] = 15; disp_buf[8] = d7; disp_buf[9] = d8; disp_buf[10] = d9; disp_buf[11] = 15; }
-   IF (display_type == 8){disp_buf[6] = 3; disp_buf[7] = 15; disp_buf[8] = d7; disp_buf[9] = d8; disp_buf[10] = d9; disp_buf[11] = 15; }
-   
-   IF(display_type == 0)
-   {
-   IF (value < 1000000) disp_buf[6] = 15;
-   IF (value < 100000) disp_buf[7] = 15;
-   IF (value < 10000) disp_buf[8] = 15;
-   IF (value < 1000) disp_buf[9] = 15;
-   if (value < 100) disp_buf[10] = 15;
-   if (value < 10) disp_buf[11] = 15;
-   if (value < 1) disp_buf[11] = 15;
-   }
+   IF (value < 1000000) g3 = 15;
+   IF (value < 100000) g4 = 15;
+   IF (value < 10000) g5 = 15;
+   IF (value < 1000) g6 = 15;
+   if (value < 100) g7 = 15;
+   if (value < 10) g8 = 15;
+   if (value < 1) g9 = 15;   
    }
    
+   switch(blank_digit)
+   {
+   case 1: g3 = 15; break;
+   case 2: g4 = 15; break;
+   case 3: g5 = 15; break;
+   case 4: g6 = 15; break;
+   case 5: g7 = 15; break;
+   case 6: g8 = 15; break;
+   case 7: g9 = 15; break;
+   }
+   
+   IF (display_type == 0){disp_buf[6] = g3; disp_buf[7] = g4; disp_buf[8] = g5; disp_buf[9] = g6; disp_buf[10] = g7; disp_buf[11] = g8; }
+   IF (display_type == 1){disp_buf[6] = g4; disp_buf[7] = g5; disp_buf[8] = g6; disp_buf[9] = g7; disp_buf[10] = g8; disp_buf[11] = g9; }
+   IF (display_type == 2){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = g7; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
+   IF (display_type == 3){disp_buf[6] = g7; disp_buf[7] = g8; disp_buf[8] = g9; disp_buf[9] = 15; disp_buf[10] = 15; disp_buf[11] = 15; }
+   IF (display_type == 4){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g7; disp_buf[10] = g8; disp_buf[11] = g9; }
+   IF (display_type == 5){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = 0; disp_buf[9] = 0; disp_buf[10] = 0; disp_buf[11] = 15; }
+   
+   IF (display_type == 6){disp_buf[6] = 1; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
+   IF (display_type == 7){disp_buf[6] = 2; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
+   IF (display_type == 8){disp_buf[6] = 3; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
    send_disp_buf (fast_update);
 }
 
@@ -171,22 +140,25 @@ void flash_freq_data(INT8 current, int32 frequency)
    disp_buf[12] = 15;
    STATIC int16 counter = 0;
    STATIC int1 flash;
-   ++counter;
-   if(frequency > max_freq) {frequency = max_freq;}
-   if(frequency < min_freq) {frequency = min_freq;}
+   if((current > 0) && (current < 10)) ++counter;
    
-IF (counter > 200 )
+   if(current >= 10) {current -=10; flash = 0;}
+   else
+   if((current > 0) && (current < 10))
    {
-      IF (flash == 1)flash = 0; else flash = 1;
-      counter = 0;
+      IF (counter > vfo_button_tuning_flash_speed )
+      {
+         IF (flash == 1)flash = 0; else flash = 1;
+         counter = 0;
+      }
    }
-
+   
    IF (current == 7)
    {
       switch(flash)
       {
       case 1: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1,current, 1, 0) ; break;
-      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, current+8, 1, 0) ; break;
+      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, 0, 1, 0) ; break;
       }
    }
 
@@ -195,7 +167,7 @@ IF (counter > 200 )
       switch(flash)
       {
       case 1: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1,current, 0, 0) ; break;
-      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, current + 8, 0, 0) ; break;
+      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, 0, 0, 0) ; break;
       }
    }
 }

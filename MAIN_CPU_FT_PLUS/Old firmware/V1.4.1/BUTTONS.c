@@ -6,7 +6,7 @@ int8 get_dcs();
 void mode_SWITCH(int8 mode)
 {
    mem_mode = mode;
-   save8(mode_n,mode);
+   save_mode_n(mode);
 }
 
 void mode_SWITCH_kenwood(int8 mode)
@@ -15,7 +15,7 @@ void mode_SWITCH_kenwood(int8 mode)
    IF(mode == (48 + 0)){mem_mode = 0; active_vfo = 0; frequency = load_band_vfo_f(active_vfo, band); }
    IF(mode == (48 + 1)){mem_mode = 0; active_vfo = 1; frequency = load_band_vfo_f(active_vfo, band); }
    IF(mode == (48 + 2)){mem_mode = 1; frequency = load_mem_ch_f(mem_channel); }
-   save8(mode_n, mem_mode); save8(vfo_n,active_vfo);
+   save_mode_n(mem_mode); save_vfo_n(active_vfo);
 }
 
 void lock_dial_kenwood(INT8 mode)
@@ -23,14 +23,14 @@ void lock_dial_kenwood(INT8 mode)
    IF(mode == (48 + 0)) dl = 0;
    IF(mode == (48 + 1)) dl = 1;
    dcs = get_dcs();
-   save8(dcs_n,dcs);
+   save_dcs_n(dcs);
 }
 
 void toggle_fine_tune_display()
 {
    IF(fine_tune == 1) fine_tune = 0; else fine_tune = 1;
    errorbeep(1);
-   save8(fine_tune_n,fine_tune);
+   save_fine_tune_n(fine_tune);
    RETURN;
 }
 
@@ -48,7 +48,7 @@ void toggle_per_band_offset()
       errorbeep(3);
    }
 
-   save8(band_offset_n,per_band_offset);
+   save_band_offset_n(per_band_offset);
    RETURN;
 }
 
@@ -59,7 +59,7 @@ void toggle_speed_dial()
    errorbeep(speed_dial + 1);
    IF(speed_dial == 0) VFD_special_data(5);
    IF(speed_dial == 1) VFD_special_data(6);
-   save8(dial_n,speed_dial);
+   save_dial_n(speed_dial);
    RETURN;
 
    #endif
@@ -77,19 +77,19 @@ void toggle_cb_mode()
    int8 state = get_state();
    if(state < 4)
    {
-      save8(cache_n,mem_mode);
-      mem_mode = 2; save8(mode_n,mem_mode);
+      save_cache_n(mem_mode);
+      mem_mode = 2; save_mode_n(mem_mode);
       read_all_state();
-      cb_region = load8(cb_reg_n);
-      frequency = update_PLL(frequency);
+      cb_region = load_cb_reg_n();
+      update_PLL(frequency);
       VFD_data(0xFF, dcs, cb_channel, 0xFF,0,0, 2,0);
    }
    else
    IF(state == 4)
    {
-      mem_mode = load8(cache_n); save8(mode_n,mem_mode);
+      mem_mode = load_cache_n(); save_mode_n(mem_mode);
       read_all_state();
-      frequency = update_PLL(frequency);
+      update_PLL(frequency);
       vfo_disp(active_vfo, dcs, frequency, mem_channel, 0);
    }
    
@@ -105,7 +105,7 @@ void toggle_cb_region()
       IF(cb_region == 1)VFD_special_data(3);
       
       VFD_data(0xFF, dcs, cb_channel, 0xFF, 0,0,2,0);
-      save8(cb_reg_n,cb_region);
+      save_cb_reg_n(cb_region);
    }
 
    RETURN;

@@ -109,7 +109,7 @@ int8 get_dcs()
    }
 
    set_dl();
-   save8(dcs_n,res);
+   save_dcs_n(res);
    RETURN res;
 }
 
@@ -121,7 +121,7 @@ void set_dcs(INT8 res)
    }
 
    set_dl();
-   save8(dcs_n,res);
+   save_dcs_n(res);
 }
 
 void cat_transmit(INT1 tx_request)
@@ -213,16 +213,10 @@ int8 calc_band(INT32 frequency)
    RETURN i;
 }
 
-int32 update_PLL(INT32 calc_frequency)
+void update_PLL(INT32 calc_frequency)
 {
 // We only need to update, if there is a new NCODE to send, ie when new frequency is requested. We don't touch ref latches(6,5,4), so no need to resend
 //if PLL update is requested for the SAME frequency, you are sent on your way and bounced back whence you came lol
-      
-      int32 offset_frequency; //preserve original frequency incase we need it late
-      if(calc_frequency < min_freq) {calc_frequency = min_freq;}
-      if(calc_frequency > max_freq) {calc_frequency = max_freq;}
-      
-      offset_frequency = calc_frequency;
       STATIC int16 old_khz_freq;
       STATIC int32 old_band_freq;
       STATIC int8 old_PLLband;
@@ -230,8 +224,8 @@ int32 update_PLL(INT32 calc_frequency)
       static int32 oldcheck;
       int32 newcheck = calc_frequency;
       
-      if(newcheck == oldcheck) return newcheck;
-      
+      if(newcheck == oldcheck) return;
+      int32 offset_frequency = calc_frequency; //preserve original frequency incase we need it late
       for (int i = 0; i < 10; i++)
       {
          if((offset_frequency >= PLL_band_bank[(i * 3)]) && (offset_frequency <= PLL_band_bank[(i * 3) + 1])) { PLLband = (PLL_band_bank[(i * 3) + 2]); break;}
@@ -324,7 +318,7 @@ int32 update_PLL(INT32 calc_frequency)
           old_band_freq = tmp_band_freq;
        }
        //res2 = d10;
-       load_100hz(d100+1);
+       load_100hz(d100);
        load_10hz(d10);
        res2 = read_counter();
        
@@ -334,7 +328,7 @@ int32 update_PLL(INT32 calc_frequency)
       printf ("display frequency : %ld\r\n", calc_frequency);
       printf ("tuned frequency : %ld\r\n", offset_frequency);
       #endif
-      return calc_frequency;
+      
 }
 
 void program_offset()
@@ -356,7 +350,7 @@ void program_offset()
    }
 
    INT8 res = 1;
-   btnres = 0;
+   INT8 btnres = 0;
    INT32 testfreq = frequency;
    cls();
    //GOTO start;
@@ -372,18 +366,18 @@ void program_offset()
             IF(dir)
             {
                testfreq = frequency - offset_val;
-               VFD_data(0xFF, 0xFF, offset_val, 0xFF, 1,0,3,0);
+               VFD_data(0xFF, 0xFF, offset_val, 0xFF, 0,0,3,0);
             }
 
             ELSE
             {
                testfreq = frequency + offset_val;
-               VFD_data(0xFF, 0xFF, offset_val, 0xFF, 1,0,4,0);
+               VFD_data(0xFF, 0xFF, offset_val, 0xFF, 0,0,2,0);
             }
          }
 
          ELSE VFD_data(0xFF, 0xFF, 1, 0xFF, 0,0,5,0);
-         testfreq = update_PLL(testfreq);
+         update_PLL(testfreq);
          res = 0;
       }
 
@@ -413,8 +407,6 @@ void program_offset()
       IF(btnres == 6)
       {
          save_offset_f(0);
-         VFD_data(0xFF, 0xFF, 1, 0xFF, 0,0,5,0);
-         delay_ms(1000);
          BREAK;
       }
 
@@ -438,3 +430,4 @@ void program_offset()
    #endif
 
 }
+

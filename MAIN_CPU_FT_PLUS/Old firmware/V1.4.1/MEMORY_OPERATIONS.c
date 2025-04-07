@@ -9,7 +9,7 @@ void mem_op(INT8 option)
       beep();
       IF (active_vfo == 0){active_vfo = 1; state = 2; }
       ELSE{active_vfo = 0; state = 1; }
-      save8(vfo_n,active_vfo);
+      save_vfo_n (active_vfo);
       blink = 0;
    }
 
@@ -49,7 +49,7 @@ void mem_op(INT8 option)
          IF (active_vfo == 1) state = 2;
       }
 
-      save8(mode_n, mem_mode);
+      save_mode_n (mem_mode);
       blink = 0;
    }
 

@@ -65,74 +65,74 @@ char temp_byte;
 
 char buffer[30]; 
 int next_in = 0;
+long serial_timer = 0;
 int1 valid;
 
 #INT_RDA
 void  RDA_isr(VOID)
 {
-      if(!command_received)
+   timerstart = 1;
+   
+   IF(command_processed)
+   {
+      for(INT i  = 0; i < COMMAND_LENGTH; ++i)
       {
-         if(kbhit())
-         {
-            temp_byte = getc();
-            buffer[next_in] = temp_byte;
-         
-            if(cat_mode == 0)
-            {
-            if(temp_byte == 0x3B) SWITCH_CAT = 1;
-            if(next_in == 4) command_received = 1; else ++next_in;
-            }
-            if(cat_mode == 1)
-            {
-            if(temp_byte == 0x3B) command_received = 1; else ++next_in;
-            }
-         } 
-      }
-      if(command_received)
-      {
-         if(kbhit()) {getc();}
-         next_in = 0;
+         buffer[i] = '\0';
       }
 
-}
+      command_processed = 0;
+   }
+
+   IF(kbhit())
+   {
+      temp_byte = getc();
+      buffer[next_in] = temp_byte;
+      next_in++;
+      serial_timer = 0;
+      
+      IF( ! cat_mode)
+      {
+         if(temp_byte == 0x3B){SWITCH_cat = 1;}
+         IF(next_in > (COMMAND_LENGTH - 1))command_received = 1;
+      }
+
+      ELSE
+      {
+         IF( ! command_received)
+         {
+            IF(temp_byte == 0x3B)
+            {
+               
+               IF(next_in < (COMMAND_LENGTH - 1))command_received = 1;
+
+               ELSE
+               {
+                  next_in = 0;
+                  command_received = 0;
+                  command_processed = 1;
+                  WHILE(kbhit()){ getc(); }
+               }
+            }
+
+            } else WHILE(kbhit()){ getc(); }
+         }
+
+         
+         IF(command_received)
+         {
+            buffer[COMMAND_LENGTH] = '\0';   // terminate string with null
+            next_in = 0;
+            timerstart = 0;
+            WHILE(kbhit()){ getc(); }
+         }
+      }
+
+   }
 
    #endif
 
    INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0;
 
-
-   int8 check_cat()
-   {
-         int8 catres = 0;
-         IF (cat_mode == 0)
-         {
-            IF (command_received)
-            {
-               command_received = 0;
-               catres = parse_cat_command_yaesu ();
-            }
-         }
-
-         
-         IF (cat_mode == 1)
-         {
-            IF (command_received)
-            {
-               command_received = 0;
-               catres = parse_cat_command_kenwood ();
-            }
-         }
-
-         if (SWITCH_cat == 1)
-         {
-            IF (cat_mode == 0)cat_mode = 1; else cat_mode = 0;
-            save8(cat_mode_n,cat_mode) ;
-            beep () ;
-            SWITCH_cat = 0;
-         }
-         return catres;
-   
-   }
 
    INT i;
 
@@ -211,15 +211,13 @@ void  RDA_isr(VOID)
 
    VOID cat_read_freq(int32 temp_value, int8 base)
    {
-      int8 i3,i4,i5,i6,i7,i8,i9;
-      split_value(temp_value, i3,i4,i5,i6,i7,i8,i9);
-      cat_ans[base] = (48 + i3);
-      cat_ans[base + 1] = (48 + i4);
-      cat_ans[base + 2] = (48 + i5);
-      cat_ans[base + 3] = (48 + i6);
-      cat_ans[base + 4] = (48 + i7);
-      cat_ans[base + 5] = (48 + i8);
-      cat_ans[base + 6] = (48 + i9);
+      cat_ans[base] = (48 + d3);
+      cat_ans[base + 1] = (48 + d4);
+      cat_ans[base + 2] = (48 + d5);
+      cat_ans[base + 3] = (48 + d6);
+      cat_ans[base + 4] = (48 + d7);
+      cat_ans[base + 5] = (48 + d8);
+      cat_ans[base + 6] = (48 + d9);
    }
 
    INT32 temp_value;
@@ -311,7 +309,7 @@ void  RDA_isr(VOID)
       IF(buffer[2] == '0')
       {
          IF(active_vfo == 1)save_band_vfo_f(1, band, cat_storage_buffer[1]);
-         active_vfo = 0; save8(vfo_n,0);
+         active_vfo = 0; save_vfo_n(0);
          frequency = cat_storage_buffer[0];
          FR_ans(0);
       }
@@ -319,7 +317,7 @@ void  RDA_isr(VOID)
       IF(buffer[2] == '1')
       {
          IF(active_vfo == 0)save_band_vfo_f(0, band, cat_storage_buffer[0]);
-         active_vfo = 1; save8(vfo_n,1);
+         active_vfo = 1; save_vfo_n(1);
          frequency = cat_storage_buffer[1];
          FR_ans(1);
       }
@@ -348,7 +346,7 @@ void  RDA_isr(VOID)
       IF(buffer[2] == '0')
       {
          IF(active_vfo == 1)save_band_vfo_f(1, band, cat_storage_buffer[1]);
-         active_vfo = 0; save8(vfo_n,0);
+         active_vfo = 0; save_vfo_n(0);
          frequency = cat_storage_buffer[0];
          FT_ans(0);
       }
@@ -356,7 +354,7 @@ void  RDA_isr(VOID)
       IF(buffer[2] == '1')
       {
          IF(active_vfo == 0)save_band_vfo_f(0, band, cat_storage_buffer[0]);
-         active_vfo = 1; save8(vfo_n,1);
+         active_vfo = 1; save_vfo_n(1);
          frequency = cat_storage_buffer[1];
          FT_ans(1);
       }
@@ -431,7 +429,7 @@ void  RDA_isr(VOID)
    {
       IF (buffer[2] == '0') id_enable = 0;
       IF (buffer[2] == '1') id_enable = 1;
-      save8(id_enable_n,id_enable);
+      save_id_enable_n(id_enable);
       beep();
    }
 
@@ -440,7 +438,7 @@ void  RDA_isr(VOID)
    INT8 parse_cat_command_kenwood ()
    {
       INT32 temp_value;
-      INT8 report_back = 0;
+      INT1 report_back = 0;
       INT8 state = read_state();
       INT i;
 
@@ -465,16 +463,16 @@ void  RDA_isr(VOID)
          CASE 7: FA_set(); report_back = 1; break;
          CASE 8: FB_set(); report_back = 1; break;
          case 9: mode_SWITCH_kenwood(buffer[2]); report_back = 1; break; //FN
-         CASE 10: FR_set(); report_back = 2;break;
+         CASE 10: FR_set(); report_back = 1;break;
          CASE 11: FR_read(); break;
-         CASE 12: FT_set(); report_back = 2;break;
+         CASE 12: FT_set(); report_back = 1;break;
          CASE 13: FT_read(); break;
          case 14: calc_IF(); send_if(); break;
          CASE 15: IE_set(); break;
          CASE 16: LK_read(); break; //LK;
-         CASE 17: LK_set(); report_back = 2; break; //LK + 0 or 1;
+         CASE 17: LK_set(); report_back = 1; break; //LK + 0 or 1;
          CASE 18: break; //MC
-         CASE 19: dummy_mode = (buffer[2]); save8(dummy_mode_n,dummy_mode); break;
+         CASE 19: dummy_mode = (buffer[2]); save_dummy_mode_n(dummy_mode); break;
          CASE 20: temp_value = cat_storage_buffer[active_vfo]; break;
          CASE 21: break; //MW
          CASE 22: break; //Clear clar freq
@@ -490,10 +488,9 @@ void  RDA_isr(VOID)
          
       }
 
-      command_received = 0;
-      if(report_back) return report_back;
+      command_received = 0; command_processed = 1;
       force_update = 1;
-      RETURN 0;
+      RETURN report_back;
    }
 
    VOID split_button(int8 state);
@@ -530,12 +527,23 @@ void  RDA_isr(VOID)
          CASE 0x0F: frequency = ((byte1_upper * 1000000) + (byte1_lower * 100000) + (byte2_upper * 10000) + (byte2_lower * 1000) + (byte3_upper * 100) + (byte3_lower * 10) + byte4_upper); break;
           
          case 0xFC: beep(); IF( ! gen_tx)gen_tx = 1; else gen_tx = 0; break;
-         CASE 0xFE: save8 (checkbyte_n, 0xFF); reset_cpu(); break;
+         CASE 0xFE: reset_checkbyte_n(); reset_cpu(); break;
          CASE 0xFF: reset_cpu(); break;
          #ifdef include_cb
          case 0xFD: IF(gen_tx)toggle_cb_mode(); break;
          #endif
          
+         case 0xFA: IF((byte1_upper  * 16) +(byte1_lower) != 0){save_savetimer_n((byte1_upper * 16) + byte1_lower); savetimerEEPROM = ((byte1_upper * 16) + (byte1_lower)); beep(); savetimermax = 0;} BREAK;
+         
+         CASE 0xFB:
+         INT8 count = 0;
+         IF((byte1_upper  * 16) +(byte1_lower) != 0){save_speed1_n((byte1_upper * 16) + byte1_lower); ++count; }
+         IF((byte2_upper  * 16) +(byte2_lower) != 0){save_speed2_n((byte2_upper * 16) + byte2_lower); ++count; }
+         IF((byte3_upper  * 16) +(byte3_lower) != 0){save_speed3_n((byte3_upper * 16) + byte3_lower); ++count; }
+         IF((byte4_upper  * 16) +(byte4_lower) != 0){save_speed4_n((byte4_upper * 16) + byte4_lower); ++count; }
+         errorbeep(count);
+         reset_cpu();
+         BREAK;
       }
 
       IF ((byte5 >= 0xE0) && (byte5 <= 0xEE))
@@ -552,6 +560,8 @@ void  RDA_isr(VOID)
          errorbeep(3);
       }
 
+      IF(frequency >= max_freq) frequency = max_freq;
+      IF(frequency < min_freq) frequency = min_freq;
       force_update = 1;
       RETURN 1;
    }

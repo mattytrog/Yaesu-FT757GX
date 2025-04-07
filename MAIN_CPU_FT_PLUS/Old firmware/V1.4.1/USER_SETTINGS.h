@@ -14,10 +14,12 @@
 #define include_offset_programming
 #define include_pms
 #define include_manual_tuning
-#endif
 #define store_to_eeprom
-
-#define speed1 2       //Slowest. Required FOR all dials...
+#endif
+#define out_speed1 2       //Slowest. Required FOR all dials...
+#define out_speed2 10      //Slightly faster
+#define out_speed3 123     //Faster still
+#define out_speed4 255     //Super-fast
 
 //PMS Settings
 #define scan_pause_count 500  // Pause after of squelch BREAK
@@ -25,8 +27,7 @@
 #define MR_dwell_time 50       
 #define CB_dwell_time 10       
 #define DEFAULT_cat_mode 0       //0 = yaesu, 1 = kenwood
-#define vfo_button_tuning_flash_speed 1000
-#define default_save_timer 3 //roughly seconds. Not accurate. About a second or two off over 30 seconds. Close enough for agricultural.
+#define vfo_button_tuning_flash_speed 100
 //#define debug
 //#define serial_mode
 //#define ncodes
@@ -82,7 +83,7 @@ int8 BITSA,BITSB,BITSC,BITSD;
 # bit   gen_tx=BITSA.4 
 # bit   dl=BITSA.5  
 # bit   active_vfo=BITSA.6
-# bit   tick=BITSA.7
+//# bit   lv_detect=BITSA.7
 # bit   fine_tune_display=BITSB.0 
 # bit   sl=BITSB.1 
 # bit   cl=BITSB.2 
@@ -106,7 +107,6 @@ int8 BITSA,BITSB,BITSC,BITSD;
 # bit   cat_tx_transmitting = BITSD.4
 # bit   id_enable = BITSD.5
 # bit   mic_down = BITSD.6
-# bit   savetimerON = BITSD.7
 
 #ifdef include_cb
 
@@ -121,7 +121,7 @@ const INT32 cb_channel_bank[80] =
    2780125, 2781125, 2782125, 2783125, 2784125, 2785125, 2786125, 2787125, 2788125, 2789125,
    2790125, 2791125, 2792125, 2793125, 2794125, 2795125, 2796125, 2797125, 2798125, 2799125
 };
-int32 cb_frequency;
+
 int8 cb_channel;
 int8 cb_region;
 int8 channel_start;
@@ -185,28 +185,3 @@ int8 dcs_res[32] =
    1, 1, 0, 0,
    0, 1, 0, 1
 };
-
-#ifdef include_cat
-int32 baud_rate;
-int8 dummy_mode;
-int1 SWITCH_cat = 0;
-#endif
-
-int32 frequency;
-int8 mem_channel, PLLband, band, mem_mode, dcs, speed_dial, mic_pressed, res1, res2, Q64_val, Q64_tmp, baud_rate_n;
-int8 d3= 0,d4= 0,d5= 0,d6= 0,d7= 0,d8= 0,d9= 0,d10= 0; 
-int1 LONG_press_down, long_press_up;
-int8 micres = 0;
-   INT8 vfodialres = 0;
-   INT8 cbdialres = 0;
-   INT8 btnres = 0;
-   INT8 txres = 0;
-   INT8 catres = 0;
-   INT8 counterstart = 0;
-   INT16 counter = 0;
-   INT16 counter1 = 0;
-   INT8 counter2 = 0;
-   //INT8 lvcount = 0;
-   INT16 countermax = 6000;
-   int32 savetimer = 0;
-   int32 savetimermax = 0;

@@ -5,24 +5,58 @@
 //PLL diagrams and valuable info Daniel Keogh
 #include <18F452.h>
 #include "user_settings.h"
-#include "SAVES.h"
 #include <bootloader.h>
 #fuses HS,PUT, NOWDT,NOPROTECT,NOLVP, BORV27
 #use delay(clock=20000000)
 #use rs232(baud=4800, xmit=PIN_C6, rcv=PIN_C7, parity=N, stop=2, ERRORS)
 
 
+//limits
 
+
+
+
+
+int32 frequency, cb_frequency;
+int32 baud_rate;
+int8 mem_channel, PLLband, band, mem_mode, dcs, speed_dial, speed1, speed2, speed3, speed4, mic_pressed, res1, res2, COMMAND_LENGTH, baud_rate_n, Q64_val, Q64_tmp;
+int8 d3= 0,d4= 0,d5= 0,d6= 0,d7= 0,d8= 0,d9= 0,d10= 0, dummy_mode; 
+int1 LONG_press_down, long_press_up;
+int8 micres = 0;
+   INT8 vfodialres = 0;
+   INT8 cbdialres = 0;
+   INT8 btnres = 0;
+   INT8 txres = 0;
+   INT8 catres = 0;
+   int1 SWITCH_cat = 0;
+   INT8 counterstart = 0;
+   INT16 counter = 0;
+   INT16 counter1 = 0;
+   INT8 counter2 = 0;
+   //INT8 lvcount = 0;
+   INT16 countermax = 6000;
+   int32 savetimer = 0;
+   int8 savetimerEEPROM;
+   int32 savetimermax = 0;
+#ifdef store_to_eeprom
+
+   INT1 eeprom_enabled = 1;
+
+#ELSE
+
+   INT1 eeprom_enabled = 0;
+
+#endif
 #ifdef include_cat
 
-int1 command_received = 0;
+int1 command_received = 0; INT1 command_processed = 0;
 #endif
 
 //create ram store, follows eeprom-style IF enabled
-#ifndef store_to_eeprom
+
 int32 ram_bank[60];
 int8 var_bank[40];
-#endif
+int32 cat_storage_buffer[2];
 void beep();
 void load_10hz(INT8 val);
 void load_100hz(INT8 val);
@@ -88,15 +122,106 @@ int8 load8(INT8 base);
 //!55 SPARE                D8
 //!55 SPARE                DC
 //only save IF value different from current contents
+void save32(INT8 base, int32 value);
 
-
-#int_timer0
-void timer0_isr()
+// 0 1
+void save_band_vfo_f(INT8 vfo, int8 band, int32 value)
 {
-if(tick) tick = 0; else tick = 1;
-
+   IF (vfo == 0){save32 ((30 + band), value); cat_storage_buffer[0] = value; }
+   IF (vfo == 1){save32 ((41 + band), value); cat_storage_buffer[1] = value; }
 }
 
+int32 load_band_vfo_f(INT8 vfo, int8 band) 
+{
+   if (vfo == 0) RETURN (load32 (30 + band));
+   if (vfo == 1) RETURN (load32 (41 + band));
+}
+
+//!VOID save_vfo_f(int8 vfo, int32 value) {save32 (vfo, value);}
+//!int32 load_vfo_f(int8 vfo) {RETURN (load32 (vfo));}
+void save_cache_f(INT32 value) {save32 (2, value);}
+int32 load_cache_f() {RETURN (load32 (2));}
+void save_cache_mem_mode_f(INT32 value) {save32 (3, value);}
+int32 load_cache_mem_mode_f() {RETURN (load32 (3));}
+// 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+void save_mem_ch_f(INT8 channel, int32 value) {save32 (channel+4, value);}
+int32 load_mem_ch_f(int8 channel) {RETURN (load32(channel+4));}
+//20 21 22 23 24 25 26 27 28 29 30 31
+void save_offset_f(INT32 value)
+{IF(per_band_offset) save32 ((PLLband + 20), value); else save32 (19, value);}
+int32 load_offset_f() 
+{if(per_band_offset) RETURN (load32 (PLLband + 20)); else return (load32 (19));}
+void save_clar_RX_f(INT32 value) {save32(41, value);}
+int32 load_clar_RX_f() {RETURN (load32 (41));}
+void save_clar_TX_f(INT32 value) {save32(42, value);}
+int32 load_clar_TX_f() {RETURN (load32 (42));}
+//single bytes. Start at 0xE0
+void save_checkbyte_n(INT8 res) {save8(31, res);}
+int8 load_checkbyte_n() {RETURN (load8(31));}
+void reset_checkbyte_n() {save8(31, 0xFF);}
+void save_savetimer_n(INT res){save8(19, res);}
+int8 load_savetimer_n() {RETURN (load8(19));}
+void save_band_n(INT res){save8(18, res);}
+int8 load_band_n() {RETURN (load8(18));}
+void save_id_enable_n(INT8 res) {save8(17, res);}
+int8 load_id_enable_n() {RETURN (load8(17));}
+void save_dummy_mode_n(INT8 res) {save8(16, res);}
+int8 load_dummy_mode_n() {RETURN (load8(16));}
+void save_baud_rate_n(INT8 res) {save8(15, res);}
+int8 load_baud_rate_n() {RETURN (load8(15));}
+void save_cat_mode_n(INT8 res) {save8(14, res);}
+int8 load_cat_mode_n() {RETURN (load8(14));}
+void save_band_offset_n(INT8 res) {save8(13, res);}
+int8 load_band_offset_n() {RETURN (load8(13));}
+void save_vfo_n(INT8 res) {save8(12, res);}
+int8 load_vfo_n() {RETURN (load8(12));}
+void save_mode_n(INT8 res) {save8(11, res);}
+int8 load_mode_n() {RETURN (load8(11));}
+void save_mem_ch_n(INT8 res) {save8(10, res);}
+int8 load_mem_ch_n() {RETURN (load8(10));}
+void save_fine_tune_n(INT8 res) {save8(9, res);}
+int8 load_fine_tune_n() {RETURN (load8(9));}
+void save_dial_n(INT8 res) {save8(8, res);}
+int8 load_dial_n() {RETURN (load8(8));}
+void save_cb_ch_n(INT8 res) {save8(7, res);}
+int8 load_cb_ch_n() {RETURN (load8(7));}
+void save_cb_reg_n(INT8 res) {save8(6, res);}
+int8 load_cb_reg_n() {RETURN (load8(6));}
+void save_dcs_n(INT8 res) {save8(5, res);}
+int8 load_dcs_n() {RETURN (load8(5));}
+void save_cache_n(INT8 res) {save8(4, res);}
+int8 load_cache_n() {RETURN (load8(4));}
+void save_speed1_n(INT8 res) {save8(3, res);}
+int8 load_speed1_n() {RETURN (load8(3));}
+void save_speed2_n(INT8 res) {save8(2, res);}
+int8 load_speed2_n() {RETURN (load8(2));}
+void save_speed3_n(INT8 res) {save8(1, res);}
+int8 load_speed3_n() {RETURN (load8(1));}
+void save_speed4_n(INT8 res) {save8(0, res);}
+int8 load_speed4_n() {RETURN (load8(0));}
+int8 calc_band(INT32 frequency);
+
+void save_all_n()
+{
+   INT1 temp_eeprom_en = eeprom_enabled;
+   eeprom_enabled = 1;
+   
+   for (INT i = 0; i <= 18; i++)
+   {save32 (i, ram_bank[i]); }
+   FOR (i = 19; i <= 29; i++)
+   {save32 (i, ram_bank[i]); }
+   FOR (i = 30; i <= 40; i++)
+   {save32 (i, ram_bank[i]); }
+   FOR (i = 41; i <= 51; i++)
+   {save32 (i, ram_bank[i]); }
+   FOR (i = 52; i <= 53; i++)
+   {save32 (i, ram_bank[i]); }
+   FOR (i = 0; i <= 31; i++)
+   {save8 (i, var_bank[i]); }
+   save_checkbyte_n (2) ;
+   eeprom_enabled = temp_eeprom_en;
+}
+//int8 dbuf [8] = {0,0,0,0,0,0,0,0};
 void split_value(int32 value, INT8 &d3, int8 &d4, int8 &d5, int8 &d6, int8 &d7, int8 &d8, int8 &d9)
 {
    INT32 tmp_value = value;
@@ -129,10 +254,8 @@ int8 get_state()
       IF (active_vfo == 1) {save_band_vfo_f (1, band, frequency); state = 2; }
    }
 
-   IF (mem_mode == 1) {save_cache_mem_mode_f (frequency); save8(mem_ch_n,mem_channel); state = 3; }
-#ifdef include_cb
-   IF (mem_mode == 2) {save8(cb_ch_n, cb_channel); state = 4;}
-#endif
+   IF (mem_mode == 1) {save_cache_mem_mode_f (frequency); save_mem_ch_n (mem_channel); state = 3; }
+   IF (mem_mode == 2) {save_cb_ch_n (cb_channel); state = 4;}
    RETURN state;
 }
 
@@ -161,10 +284,8 @@ int8 read_all_state()
       IF (active_vfo == 1) {frequency = load_band_vfo_f (1, band); state = 2; }
    }
 
-   IF (mem_mode == 1) {frequency = load_cache_mem_mode_f (); mem_channel = load8(mem_ch_n); state = 3; }
-   #ifdef include_cb
-   IF (mem_mode == 2) {cb_channel = load8(cb_ch_n); state = 4; }
-   #endif
+   IF (mem_mode == 1) {frequency = load_cache_mem_mode_f (); mem_channel = load_mem_ch_n (); state = 3; }
+   IF (mem_mode == 2) {cb_channel = load_cb_ch_n (); state = 4; }
    RETURN state;
 }
 
@@ -178,13 +299,11 @@ int8 refresh_all_state()
       IF (active_vfo == 1) {frequency = load_band_vfo_f (1, band); state = 2; }
    }
 
-   IF (mem_mode == 1) { mem_channel = load8(mem_ch_n); frequency = load_mem_ch_f (mem_channel);state = 3; }
-   #ifdef include_cb
-   IF (mem_mode == 2) {cb_channel = load8(cb_ch_n); state = 4; }
-   #endif
+   IF (mem_mode == 1) { mem_channel = load_mem_ch_n (); frequency = load_mem_ch_f (mem_channel);state = 3; }
+   IF (mem_mode == 2) {cb_channel = load_cb_ch_n (); state = 4; }
    RETURN state;
 }
-#ifdef include_cb
+
 int32 load_cb(int8 &cb_channel, int8 cb_region)
 {
       IF (cb_region == 0){channel_start = 1; channel_amount = 40;} 
@@ -198,17 +317,12 @@ int32 load_cb(int8 &cb_channel, int8 cb_region)
       
       return cb_frequency;
 }
-#endif
+
 
 //frequency loader FOR each mode. For mode 0 (VFO mode), probably not used
 int32 load_frequency(INT8 mode)
 {
-   IF (mode == 0) {
-   cat_storage_buffer[0] = load_band_vfo_f (0, band);
-   cat_storage_buffer[1] = load_band_vfo_f (1, band);
-   if(active_vfo == 0) frequency = cat_storage_buffer[0];
-   if(active_vfo == 1) frequency = cat_storage_buffer[1];
-   }
+   IF (mode == 0) frequency = load_band_vfo_f (active_vfo, band);
    IF (mode == 1) frequency = load_cache_mem_mode_f ();
 
    #ifdef include_cb
@@ -223,25 +337,12 @@ void save_frequency(INT8 mode)
    IF (mem_mode == 1) save_cache_mem_mode_f (frequency);
 
    #ifdef include_cb
-   IF (mem_mode == 2) save8(cb_ch_n,cb_channel);
+   IF (mem_mode == 2) save_cb_ch_n (cb_channel);
 
    #endif
 }
-void errorbeep(INT8 beeps);
 
-void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1 zeroes, int8 blank_digit, int8 display_type, int1 fast_update);
-
-void toggle_savetimer()
-{
-if(savetimerON == 1) savetimerON = 0; else savetimerON = 1;
-VFD_data (0xFF, 0xFF, savetimerON + 1, 0xFF, 0,0, 1, 0);
-errorbeep(savetimerON + 2);
-save8(savetimer_n, savetimerON);
-delay_ms(1000);
-}
-
-
-int32 update_PLL(INT32 calc_frequency);
+void update_PLL(INT32 calc_frequency);
 
 #ifdef include_mic_buttons
 
@@ -271,19 +372,16 @@ void cls();
 void swap_cat_mode();
 void change_baud_rate();
 int8 buttons(int1 LONG_press_enabled);
-
+void errorbeep(INT8 beeps);
 void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1 zeroes, int8 blank_digit, int8 display_type, int1 fast_update);
 void vfo_disp(INT8 vfo, int8 dcs, int32 freq, int8 ch, int1 fast_update);
 int8 calc_band(INT32 frequency);
 int8 read8(INT8 base);
-void cycle_mode_speed();
-int8 check_cat();
+
 void refresh_screen(int8 state)
 {  
    if(state != 4) vfo_disp (active_vfo, dcs, frequency, mem_channel, 0) ;
-   #ifdef include_cb
    else VFD_data (0xFF, 0xFF, cb_channel, 0xFF, 0,0, (cb_region + 6), 0);
-   #endif
 }
 
 void main()
@@ -307,12 +405,8 @@ void main()
    #ifdef include_cat
    disable_interrupts (INT_rda) ;
    enable_interrupts (INT_rda); //toggle interrupts to ensure serial is ready
-    //enable interrupts FOR CAT
+   enable_interrupts (global); //enable interrupts FOR CAT
    #endif
-   
-   setup_counters(RTCC_INTERNAL,RTCC_DIV_16);
-   enable_interrupts(int_timer0);   // Enable timer0 interrupt
-   enable_interrupts (global);
    PLL_REF () ;
    
    mic_pressed = 0;
@@ -322,14 +416,13 @@ void main()
 
 
 
- #ifdef store_to_eeprom  
-
-      IF (load8(checkbyte_n) != 1) {set_defaults (); load_values (); }
+   
+   IF (eeprom_enabled)
+   {
+      IF (load_checkbyte_n () != 1) {set_defaults (); load_values (); }
       ELSE load_values () ;
       load_frequency (mem_mode) ;
-#ELSE 
-load_values () ;
-#endif
+   } ELSE load_values () ;
 
    
    #ifdef include_cat
@@ -341,10 +434,8 @@ load_values () ;
       counter1 = 0; counter = 0; swap_cat_mode ();
       counter1 = 0; counter = 0; change_baud_rate ();
    }
-   if(pb1) while(pb1){ cycle_mode_speed();}
-   k8 = 0;
-   
-   baud_rate_n = load8(baud_n);
+
+   IF (cat_mode == 0)COMMAND_LENGTH = 5; else COMMAND_LENGTH = 26;
    counter1 = 0; counter = 0;
    k8 = 0;
 
@@ -354,7 +445,6 @@ load_values () ;
    k1 = 1; delay_us (1);
    IF (pb0) gen_tx = 0; // //widebanded?
    ELSE gen_tx = 1;
-   if(pb1) toggle_savetimer();
    k1 = 0;
    res1 = read_counter ();
    res2 = res1;
@@ -377,7 +467,7 @@ load_values () ;
    
    update = 1;
    beep () ;
-   countermax = 6000;
+
    WHILE (true)
    {
       res1 = read_counter ();
@@ -390,11 +480,40 @@ load_values () ;
       #ifdef include_cat
       IF (! update)
       {
-         if(((baud_rate_n < 5) && (counter > 1000)) || (baud_rate_n >= 5))
+         IF (cat_mode == 0)
          {
-         if(check_cat()) update = 1;
+            IF (command_received)
+            {
+               command_received = 0; command_processed = 1;
+               catres = parse_cat_command_yaesu ();
+            }
          }
+
+         
+         IF (cat_mode == 1)
+         {
+            IF (command_received)
+            {
+               command_received = 0; command_processed = 1;
+               catres = parse_cat_command_kenwood ();
+            }
+         }
+
+         if (SWITCH_cat == 1)
+         {
+            WHILE (kbhit ()){getc ();  }
+            IF (cat_mode == 0)cat_mode = 1; else cat_mode = 0;
+            save_cat_mode_n (cat_mode) ;
+            IF (cat_mode == 0)COMMAND_LENGTH = 5; else COMMAND_LENGTH = 26;
+            beep () ;
+            SWITCH_cat = 0;
+         }
+
+         IF (catres) update = 1;
       }
+
+      
+      countermax = 6000;
       
       IF (counter1 > 15000)
       {
@@ -404,7 +523,33 @@ load_values () ;
             send_IF () ;
          }
 
-         counter1 = 0;
+         //!         IF(read_adc() < 200) ++lvcount; else lvcount = 0;
+         //!         IF(lvcount > 10)
+         // !
+         {
+            //!            delay_ms(500);
+            //!            lvcount = 0;
+
+            //!            IF(eeprom_enabled == 0)
+            // !
+            {
+               //!            eeprom_enabled = 1;
+               //!            save_all_n();
+               //!            eeprom_enabled = 0;
+
+               // !
+            }
+
+            //!            WHILE(read_adc() < 200){}
+            //!            delay_ms(1000);
+            //!            cls();
+            //!            beep();
+            //!            update = 1;
+
+            // !
+         }
+
+         counter2 = 0; counter1 = 0;
       }
 
       #endif
@@ -438,7 +583,7 @@ load_values () ;
                ELSE vfodialres = freq_dial_basic (frequency, 1);
             }
 
-            IF (vfodialres) {update = 1;}
+            IF (vfodialres) update = 1;
          }
 
          #ELSE
@@ -446,7 +591,7 @@ load_values () ;
          {
             IF (! fine_tune) vfodialres = freq_dial_basic (frequency, speed1);
             ELSE vfodialres = freq_dial_basic (frequency, 1);
-            IF (vfodialres) {update = 1;}
+            IF (vfodialres) update = 1;
          }
 
          #endif
@@ -471,7 +616,7 @@ load_values () ;
          VFD_data (0xFF, dcs, cb_channel, 0xFF, 0,0, (cb_region + 6), 0);
 
          #endif
-         counterstart = 0;
+         counterstart = 0; counter = 0;
       }
 
       
@@ -488,20 +633,13 @@ load_values () ;
             force_update = 1;
          }
       }
-      
-      
-      savetimermax = (5000);
-      IF (savetimer >= savetimermax)
-      {
-         if(savetimerON) save_frequency (mem_mode);
-         savetimer = 0;
-      }
+
       
       IF (update)
       {
          //printf ("\r\n % ld", cat_storage_buffer[active_vfo]);
          update = 0;
-         counterstart = 1; savetimer = 0;counter = 0;
+         counterstart = 1; counter = 0; savetimer = 0;
          IF ( (fine_tune)&& (! catres))
          {
             IF ( (btnres == 21)|| (vfodialres == 1)) fine_tune_display = 1; else fine_tune_display = 0;
@@ -510,7 +648,7 @@ load_values () ;
          
          IF (mem_mode != 2)
          {
-            IF ( ! fine_tune_display) vfo_disp (active_vfo, dcs, frequency, mem_channel,  0);
+            IF ( ! fine_tune_display) vfo_disp (active_vfo, dcs, frequency, mem_channel,  1);
             ELSE vfo_disp (active_vfo, dcs, frequency, mem_channel, 0) ;
          }
 
@@ -522,16 +660,19 @@ load_values () ;
          }
          
          #endif
-         frequency = update_PLL (frequency) ;
+         update_PLL (frequency) ;
          cat_storage_buffer[active_vfo] = frequency;
          micres = 0; vfodialres = 0; cbdialres = 0; btnres = 0; txres = 0; catres = 0;
       }
 
-      
-      if(savetimer < savetimermax){
-      if(tick) ++savetimer;
+      if(!savetimermax) savetimermax = ((int32)(savetimerEEPROM) * 16384);
+      IF (savetimer > savetimermax)
+      {
+      save_frequency (mem_mode);
+      savetimer = 0;
       }
-      if(AI) ++counter1;
+      ++savetimer;
+      ++counter1;
       IF (counterstart) ++counter;
    }
 }
