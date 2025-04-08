@@ -90,13 +90,6 @@ int8 load8(INT8 base);
 //only save IF value different from current contents
 
 
-#int_timer0
-void timer0_isr()
-{
-if(tick) tick = 0; else tick = 1;
-
-}
-
 void split_value(int32 value, INT8 &d3, int8 &d4, int8 &d5, int8 &d6, int8 &d7, int8 &d8, int8 &d9)
 {
    INT32 tmp_value = value;
@@ -310,8 +303,6 @@ void main()
     //enable interrupts FOR CAT
    #endif
    
-   setup_counters(RTCC_INTERNAL,RTCC_DIV_16);
-   enable_interrupts(int_timer0);   // Enable timer0 interrupt
    enable_interrupts (global);
    PLL_REF () ;
    
@@ -358,8 +349,6 @@ load_values () ;
    k1 = 0;
    res1 = read_counter ();
    res2 = res1;
-   load_10hz(0);
-   load_100hz(0);
    //
    IF (mem_mode != 2)vfo_disp (active_vfo, dcs, frequency, mem_channel, 0);
 
@@ -490,7 +479,7 @@ load_values () ;
       }
       
       
-      savetimermax = (5000);
+      savetimermax = (10000);
       IF (savetimer >= savetimermax)
       {
          if(savetimerON) save_frequency (mem_mode);
@@ -529,7 +518,7 @@ load_values () ;
 
       
       if(savetimer < savetimermax){
-      if(tick) ++savetimer;
+      ++savetimer;
       }
       if(AI) ++counter1;
       IF (counterstart) ++counter;
