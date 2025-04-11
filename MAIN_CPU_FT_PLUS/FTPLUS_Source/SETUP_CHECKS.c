@@ -1,4 +1,3 @@
-
 int8 tx_oob_check(INT32 freq)
 {
    INT8 valid = 0;
@@ -342,3 +341,4 @@ void cycle_mode_speed()
 }
 
 #endif
+

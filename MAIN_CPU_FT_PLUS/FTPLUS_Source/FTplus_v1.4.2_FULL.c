@@ -5,7 +5,7 @@
 //PLL diagrams and valuable info Daniel Keogh
 #include <18F452.h>
 #include "user_settings.h"
-#include "SAVES.h"
+
 #include <bootloader.h>
 #fuses HS,PUT, NOWDT,NOPROTECT,NOLVP, BORV27
 #use delay(clock=20000000)
@@ -310,10 +310,16 @@ void main()
    pms = 0;
    AI = 0;
    cls () ;
-
-
-
- #ifdef store_to_eeprom  
+#ifdef store_to_eeprom 
+ k4 = 1; delay_us (1);  
+ if(pb1) 
+ {
+ while(pb1) {errorbeep(2);}
+ save8(checkbyte_n, 0xFF);
+ reset_cpu();
+ }
+ k4 = 0;
+  
 
       IF (load8(checkbyte_n) != 1) {set_defaults (); load_values (); }
       ELSE load_values () ;
