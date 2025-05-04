@@ -1,3 +1,4 @@
+*******************************************************
 
 LOOKING FOR FTPLUS?
 
@@ -15,6 +16,8 @@ LOOKING FOR DISPLAY CPU?
 
 Display CPU permalink!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/DISPLAY_CPU_TMS_2370
+
+*******************************************************
 
 Replacement chipset and first ever custom firmware for the FT757GX transceiver
 
