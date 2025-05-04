@@ -2,7 +2,7 @@
 
 LOOKING FOR FTPLUS?
 
-Supplement permalink!  
+Supplement permalink! IMPORTANT! READ THIS!!!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/FTPLUS_SUPPLEMENT/SUPPLEMENT.pdf
 
 Firmware permalink!
