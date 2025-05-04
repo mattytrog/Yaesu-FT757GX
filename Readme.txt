@@ -1,6 +1,8 @@
 Supplement permalink!  
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/FTPLUS_SUPPLEMENT/SUPPLEMENT.pdf
 
+Firmware permalink!
+https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/FTPLUS_FIRMWARE
 
 Replacement chipset and first ever custom firmware for the FT757GX transceiver
 
