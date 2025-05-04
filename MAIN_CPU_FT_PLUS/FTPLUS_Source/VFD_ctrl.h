@@ -1,4 +1,3 @@
-
 void clear_disp_buf()
 {
    for (INT i = 4; i < 13; i++){disp_buf[i] = 15; }
@@ -63,7 +62,7 @@ void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1
    IF (value < 1000) g6 = 15;
    if (value < 100) g7 = 15;
    if (value < 10) g8 = 15;
-   if (value < 1) g9 = 15;   
+   if (value < 1) g9 = 0;   
    }
    
    switch(blank_digit)
@@ -102,6 +101,54 @@ void VFD_special_data(INT8 option)
    delay_ms (500);
 }
 
+
+
+void cls()
+{
+   clear_disp_buf ();
+   WHILE (! pb2){}
+   send_disp_buf (0);
+}
+
+//!void flash_freq_data(INT8 current, int32 frequency)
+//!{
+//!   disp_buf[4] = 15;
+//!   disp_buf[5] = 15;
+//!   disp_buf[12] = 15;
+//!   STATIC int16 counter = 0;
+//!   STATIC int1 flash;
+//!   if((current > 0) && (current < 10)) ++counter;
+//!   
+//!   if(current >= 10) {current -=10; flash = 0;}
+//!   else
+//!   if((current > 0) && (current < 10))
+//!   {
+//!      IF (counter > vfo_button_tuning_flash_speed )
+//!      {
+//!         IF (flash == 1)flash = 0; else flash = 1;
+//!         counter = 0;
+//!      }
+//!   }
+//!   
+//!   IF (current == 7)
+//!   {
+//!      switch(flash)
+//!      {
+//!      case 1: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1,current, 1, 0) ; break;
+//!      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, 0, 1, 0) ; break;
+//!      }
+//!   }
+//!
+//!   else
+//!   {
+//!      switch(flash)
+//!      {
+//!      case 1: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1,current, 0, 0) ; break;
+//!      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, 0, 0, 0) ; break;
+//!      }
+//!   }
+//!}
+//!
 void vfo_disp(INT8 vfo, int8 dcs, int32 freq, int8 ch, int1 fast_update)
 {
    INT8 v1, v2, v10;
@@ -126,53 +173,8 @@ void vfo_disp(INT8 vfo, int8 dcs, int32 freq, int8 ch, int1 fast_update)
    VFD_data (v1, v2, freq, v10, 0,0,fine_tune_display, fast_update);
 }
 
-void cls()
-{
-   clear_disp_buf ();
-   WHILE (! pb2){}
-   send_disp_buf (0);
-}
-
-void flash_freq_data(INT8 current, int32 frequency)
-{
-   disp_buf[4] = 15;
-   disp_buf[5] = 15;
-   disp_buf[12] = 15;
-   STATIC int16 counter = 0;
-   STATIC int1 flash;
-   if((current > 0) && (current < 10)) ++counter;
-   
-   if(current >= 10) {current -=10; flash = 0;}
-   else
-   if((current > 0) && (current < 10))
-   {
-      IF (counter > vfo_button_tuning_flash_speed )
-      {
-         IF (flash == 1)flash = 0; else flash = 1;
-         counter = 0;
-      }
-   }
-   
-   IF (current == 7)
-   {
-      switch(flash)
-      {
-      case 1: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1,current, 1, 0) ; break;
-      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, 0, 1, 0) ; break;
-      }
-   }
-
-   else
-   {
-      switch(flash)
-      {
-      case 1: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1,current, 0, 0) ; break;
-      case 0: VFD_data (0xFF, 0xFF, frequency, 0xFF, 1, 0, 0, 0) ; break;
-      }
-   }
-}
-
-void mode_SWITCH(int mode);
+void mode_SWITCH(int8 mode);
+void beep();
 
 void blink_vfo_display(INT8 PA1, int8 PA2, int32 PA3, int8 PA4)
 {
@@ -187,3 +189,10 @@ void blink_vfo_display(INT8 PA1, int8 PA2, int32 PA3, int8 PA4)
    }
 }
 
+void refresh_screen(int8 state)
+{  
+   if(state != 4) vfo_disp (active_vfo, dcs, frequency, mem_channel, 0) ;
+   #ifdef include_cb
+   else VFD_data (0xFF, 0xFF, cb_channel, 0xFF, 0,0, (cb_region + 6), 0);
+   #endif
+}

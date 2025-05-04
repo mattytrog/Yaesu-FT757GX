@@ -1,68 +1,6 @@
-
 #ifdef include_cat
-
-const CHAR cat_comm[200] = 
-{
-
-   //1st CHAR, 2nd char, location of terminator, res. eg A is 0, I is 1, 0 or 1 would be 2, terminator at 3, result is function 1.
-   'I', 'D', 2, 1, // ID = READ. ANSWER.  Answer (ID006;)
-   'A', 'I', 3, 2,  //AI0 = SET. NO ANSWER. IF off. AI1 = SET. ANSWER. IF on. Answer IF
-   'D', 'N', 2, 3,  // DN = SET. NO ANSWER. DOWN. No reply. Action up button
-   'U', 'P', 2, 4,  // UP = SET. NO ANSWER. UP. No reply. Action down button
-   'F', 'A', 2, 5,  // FA = READ. ANSWER. VFOA Answer (FA000) (Freq) (0) (;)
-   'F', 'B', 2, 6,  // FB = READ. ANSWER. VFOB Answer (FB000) (Freq) (0) (;)
-   'F', 'A', 13, 7, // FA = SET. ANSWER. VFOA Set & Answer (FA000) (freq) (0) (;)
-   'F', 'B', 13, 8, // FB = SET. ANSWER. VFOB Set & Answer (FB000) (freq) (0) (;)
-   'F', 'N', 3, 9,  // FN = SET. NO ANSWER. (0;) = VFOA, (1;) = VFOB, (2;) = MR,
-   'F', 'R', 3, 10,  // FR = SET. ANSWER. (FR) (0;) = VFOA, (1;) = VFOB, Answer FR (VFO)(;)
-   'F', 'R', 2, 11,  // FR = READ. ANSWER. (FR) (0;) = VFOA, (1;) = VFOB
-   'F', 'T', 3, 12,  // FT = SET. ANSWER. (FT) (0;) = VFOA, (1;) = VFOB, Answer FT (VFO)(;)
-   'F', 'T', 2, 13,  // FT = READ. ANSWER. (FT) (0;) = VFOA, (1;) = VFOB
-   'I', 'F', 2, 14, // IF = READ. ANSWER. Answer IF
-   'I', 'E', 3, 15, // IW = *CUSTOM SET Rig ID
-   'L', 'K', 2, 16, // LK = READ. ANSWER. Answer LK0; or LK1; UNLOCK OR LOCK
-   'L', 'K', 3, 17, // LK = SET. ANSWER. LK0; Lock off. LK1; Lock on....Answer LK0; / LK1; UNLOCK/LOCK
-   'M', 'C', 5, 18, // MC = SET. NO ANSWER. MC Memory channel. (MC)(0)(CH). eg MC002; = mem 2
-   'M', 'D', 3, 19, // MD = SET. NO ANSWER. MD; MODE - Fake mode 1 = LSB, 2 = USB, 3 = CW, 4 = FM, 5 = AM, 7 = CWN
-   'M', 'R', 6, 20, // MR = READ. ANSWER. (MR) (0) (0) (memch) (;). ANSWER (MR) (0) (0) (mem ch. 2 digits) (000) (Frequency. + 0) (dummy mode) (0) (0) (00) (0) ;
-   'M', 'W', 23, 21,// MW = SET. NO ANSWER (MW) (0) (0) (mem ch. 2 digits) (000) (Frequency. + 0) (dummy mode) (0) (0) (00) (0) ;
-
-   'R', 'C', 2, 22, // RC = SET. NO ANSWER. Clarifier offset = 0.
-   'R', 'D', 2, 23, // RD = SET. NO ANSWER. Clarifier freq decrease.
-   'R', 'U', 2, 24, // RU = SET. NO ANSWER.  Clarifier freq increase.
-   'R', 'T', 3, 25, // RT = SET. NO ANSWER. RT0; = Clar off. RT1 = Clar on.
-   'R', 'X', 2, 26, // RX = SET. NO ANSWER. RX; mode.
-   'T', 'X', 2, 27, // TX = SET. NO ANSWER. TX; mode.
-   'S', 'C', 3, 28, // SC = SET. NO ANSWER. SC0; PMS off...SC1; PMS on.
-   'S', 'P', 3, 29, // SP = SET. NO ANSWER. SP0; split off...SP1 split on.
-   'Y', 'A', 2, 30, // SP = SET. NO ANSWER. SP0; split off...SP1 split on.
-   //!
-};
-
-//create large buffer, based on longest answer. Everything after the terminator is nulled. Buffer is always the same length
-char cat_ans[24] = 
-{
-   '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'
-};
-//char* cat_ptr = &cat_ans[];
-
-//38 char IF buffer. For Kenwood information request. Elements are swapped as needed
-char ifbuf[38] = 
-{
-   'I', 'F', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-   '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', ';'
-};
-
-char idbuf[5] = 
-{
-   'I', 'D', '0', '0', '6'
-};
-
-void up_down(int1 updown, INT8 state);
-
-#ifdef include_cat
+int1 command_received = 0;
 char temp_byte;
-
 char buffer[30]; 
 int next_in = 0;
 int1 valid;
@@ -96,45 +34,9 @@ void  RDA_isr(VOID)
 
 }
 
-   #endif
-
-   INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0;
-
-
-   int8 check_cat()
-   {
-         int8 catres = 0;
-         IF (cat_mode == 0)
-         {
-            IF (command_received)
-            {
-               command_received = 0;
-               catres = parse_cat_command_yaesu ();
-            }
-         }
-
-         
-         IF (cat_mode == 1)
-         {
-            IF (command_received)
-            {
-               command_received = 0;
-               catres = parse_cat_command_kenwood ();
-            }
-         }
-
-         if (SWITCH_cat == 1)
-         {
-            IF (cat_mode == 0)cat_mode = 1; else cat_mode = 0;
-            save8(cat_mode_n,cat_mode) ;
-            beep () ;
-            SWITCH_cat = 0;
-         }
-         return catres;
-   
-   }
-
-   INT i;
+void up_down(int1 updown, INT8 state);
+INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0;
+INT i;
 
    VOID calc_if()
    {
@@ -501,7 +403,12 @@ void  RDA_isr(VOID)
    VOID clarifier_button(int8 state);
    VOID mem_op(int8 option);
 
-   INT8 parse_cat_command_yaesu ()
+   
+
+
+
+
+INT8 parse_cat_command_yaesu ()
    {
       INT32 byte5 = buffer[4];
       INT32 byte4_upper = ((buffer[3] >> 4) & 0xF);
@@ -516,7 +423,7 @@ void  RDA_isr(VOID)
       
       SWITCH(byte5)
       {
-         CASE 0x01: split_button(state); beep(); break;
+         CASE 0x01: split_button(); beep(); break;
          CASE 0x02: mem_op(5); beep(); break;
          CASE 0x03: mem_op(4); beep(); break;
          CASE 0x04: dial_lock_button(); beep(); break;
@@ -524,7 +431,7 @@ void  RDA_isr(VOID)
          CASE 0x06: mem_op(3);; beep(); break;
          CASE 0x07: up_down(1, state); beep(); break;
          CASE 0x08: up_down(0, state); beep(); break;
-         CASE 0x09: clarifier_button(state); beep(); break;
+         CASE 0x09: clarifier_button(); beep(); break;
          CASE 0x0A: frequency = ((byte4_lower * 1000000) + (byte3_upper * 100000) + (byte3_lower * 10000) + (byte2_upper * 1000) + (byte2_lower * 100) + (byte1_upper * 10) + byte1_lower); break;
          CASE 0x0B: mem_op(2); beep(); break;
          CASE 0x0F: frequency = ((byte1_upper * 1000000) + (byte1_lower * 100000) + (byte2_upper * 10000) + (byte2_lower * 1000) + (byte3_upper * 100) + (byte3_lower * 10) + byte4_upper); break;
@@ -556,4 +463,37 @@ void  RDA_isr(VOID)
       RETURN 1;
    }
 
-   #endif
+int8 check_cat()
+   {
+         int8 catres = 0;
+         IF (cat_mode == 0)
+         {
+            IF (command_received)
+            {
+               command_received = 0;
+               catres = parse_cat_command_yaesu ();
+            }
+         }
+
+         
+         IF (cat_mode == 1)
+         {
+            IF (command_received)
+            {
+               command_received = 0;
+               catres = parse_cat_command_kenwood ();
+            }
+         }
+
+         if (SWITCH_cat == 1)
+         {
+            IF (cat_mode == 0)cat_mode = 1; else cat_mode = 0;
+            save8(cat_mode_n,cat_mode) ;
+            beep () ;
+            SWITCH_cat = 0;
+         }
+         return catres;
+   
+   }
+   
+      #endif

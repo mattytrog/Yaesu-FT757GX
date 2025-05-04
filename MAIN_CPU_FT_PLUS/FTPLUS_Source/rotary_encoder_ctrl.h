@@ -40,7 +40,7 @@ int16 freq_dial_accel_type1(int32 &value, int16 start_increment)
       res2 = res1;
       if(dial_timer > slow_speed_threshold) dial_increment = (dial_timer - slow_speed_threshold); else dial_increment = start_increment;
       if(dial_increment > 1) res = 2;
-      if(dial_increment == 1) res = 1;;//VFD_data(0xFF, 0xFF, dial_increment, 0xFF, 1,0);
+      if(dial_increment == 1) res = 1;//VFD_data(0xFF, 0xFF, dial_increment, 0xFF, 1,0);
       
          //VFD_data (0xFF, 0xFF, (dial_increment), 0xFF, 0,0, 1, 0); delay_ms(1000);
 
@@ -74,6 +74,7 @@ return res;
 
 int16 freq_dial_basic(int32 &value, int16 dial_increment)
 {
+   //res1 = read_counter();
    static int8 temp_count = 0;
    if(res1 == res2) return 0;
    if(res1 != res2) temp_count +=1;
@@ -137,4 +138,26 @@ int8 misc_dial8(int8 &value, int8 direction)
       return 0;
       }
       return 0;
+}
+
+int8 basic_dial(int32 &value, int32 increment)
+{
+   if(dial_clk) return 0;
+   else
+   {
+   if(!dial_dir) value -= increment; else value += increment;
+   return 1;
+   }
+}
+
+int1 dial_moved()
+{
+static int8 counter2;
+int8 counter1 = read_counter();
+if(counter2 != counter1)
+{
+counter2 = counter1;
+return 1;
+}
+return 0;
 }
