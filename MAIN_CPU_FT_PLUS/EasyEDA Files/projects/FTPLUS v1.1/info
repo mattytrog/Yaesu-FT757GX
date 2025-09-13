@@ -1,0 +1,275 @@
+{
+  "uuid": "cd1cdc42efa68e31e815ea620f027c50",
+  "path": "Offline/FTPLUS%20v1.1",
+  "name": "FTPLUS v1.1",
+  "content": "",
+  "created_at": "2025-02-25 09:22:41",
+  "updated_at": "2025-09-13 19:29:07",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "54b174cce843f6d3a1262b4dd381516b",
+      "title": "Sheet_1",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "d8c0ed7d740b4c799f762eb090744b11": 1,
+        "1b5ced76b994482cbb9b2a211a28fcdf": 1,
+        "0f628b2b2a114b80a8507415c1e0afdc": 1,
+        "d8579a56dc0c4d60a19d6f4a9c171792": 2,
+        "5b44778e8a0d4b1a93640745625b92d0": 1,
+        "0e9af40e10eb0954509ee99672d67d03": 1,
+        "8ace388ffcc149eb7b3a863b4236a5f5": 2,
+        "bdd2683743f04d50bbf500295569aff4": 2,
+        "e22147f861dd4ff4b3acec1c83f7503b": 1,
+        "50c5a980e9664fc88950cfa69aaf8785": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "DIP40",
+          1,
+          "DIP40_15.24_NOSS",
+          "1",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "22pF",
+          4,
+          "C0603",
+          "C1,C2,C3,C4",
+          {
+            "Manufacturer Part": "CSA0603C0G220J500JT",
+            "Manufacturer": "HRE(芯声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C18220911"
+          }
+        ],
+        [
+          "CON_HEADER_1X05-PTH",
+          1,
+          "M1X5",
+          "J1",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "CON_HEADER_1X03-PTH",
+          1,
+          "M1X3",
+          "J2",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "PIC18F452-I/P",
+          1,
+          "DIP40_15.24_NOSS",
+          "PIC1",
+          {
+            "Manufacturer Part": "PIC18F452-I/P",
+            "Manufacturer": "MICROCHIP(美国微芯)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C1339870"
+          }
+        ],
+        [
+          "4.7kΩ",
+          1,
+          "R0603",
+          "R1",
+          {
+            "Manufacturer Part": "0603WAF4701T5E",
+            "Manufacturer": "UNI-ROYAL(厚声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C23162"
+          }
+        ],
+        [
+          "10kΩ",
+          1,
+          "R0603",
+          "R2",
+          {
+            "Manufacturer Part": "TC0325D1002T5F",
+            "Manufacturer": "UNI-ROYAL(厚声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C2989345"
+          }
+        ],
+        [
+          "RESISTOR",
+          1,
+          "AXIAL-0.3EZ",
+          "R3",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "RESISTOREZ",
+          1,
+          "AXIAL-0.3EZ",
+          "R4",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "20MHZ",
+          1,
+          "OSC-49S-1",
+          "X1",
+          {
+            "Manufacturer Part": "X49SD20MPB2SC",
+            "Manufacturer": "EasyEDA",
+            "Supplier": "EasyEDA",
+            "Supplier Part": "C21499"
+          }
+        ]
+      ],
+      "updateTime": 1757786676,
+      "createTime": 1720549228,
+      "histories": [],
+      "created_at": "2024-07-09 19:20:28",
+      "updated_at": "2025-09-13 19:04:36"
+    },
+    {
+      "uuid": "cf0e4c5cd9dbd5fb8a72595bb5e66d0a",
+      "title": "PCB_FT757GX_CPU_BOARD",
+      "filename": "PCB_FT757GX_CPU_BOARD.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "f338708fe260467db74d5c2968efa09d": 1,
+        "f8151fdc728a41ebbc304e11d39e5437": 2,
+        "398691f1f785460098bbe5ee6590333c": 2,
+        "d8f3b09873bf4bf89243089a133a0e9f": 2,
+        "c82563d1dc7148d3927af8c950b4dd6f": 2,
+        "a7e0623fad74465b9ede497c153beaa0": 2,
+        "e664802a4bab4338a7b6d5242c1f20c5": 1,
+        "e8e7e434df574f9ea470a6eff77b8be9": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "4.7kΩ",
+          1,
+          "R0603",
+          "R1",
+          {
+            "Manufacturer Part": "0603WAF4701T5E",
+            "Manufacturer": "UNI-ROYAL(厚声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C23162"
+          }
+        ],
+        [
+          "10kΩ",
+          1,
+          "R0603",
+          "R2",
+          {
+            "Manufacturer Part": "TC0325D1002T5F",
+            "Manufacturer": "UNI-ROYAL(厚声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C2989345"
+          }
+        ],
+        [
+          "PIC18F452-I/P",
+          1,
+          "PDIP-40_L52.3-W13.8-P2.54-LS15.2-BL",
+          "U1",
+          {
+            "Manufacturer Part": "PIC18F452-I/P",
+            "Manufacturer": "MICROCHIP(美国微芯)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C1339870"
+          }
+        ],
+        [
+          "DIP 40",
+          1,
+          "DIP40",
+          "U2",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "22pF",
+          2,
+          "C0603",
+          "U3,U4",
+          {
+            "Manufacturer Part": "CSA0603C0G220J500JT",
+            "Manufacturer": "HRE(芯声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C18220911"
+          }
+        ],
+        [
+          "20MHZ",
+          1,
+          "OSC-49S-1",
+          "X1",
+          {
+            "Manufacturer Part": "X49SD20MPB2SC",
+            "Manufacturer": "EasyEDA",
+            "Supplier": "EasyEDA",
+            "Supplier Part": "C21499"
+          }
+        ]
+      ],
+      "updateTime": 1757787690,
+      "createTime": 1720551469,
+      "histories": [],
+      "created_at": "2024-07-09 19:57:49",
+      "updated_at": "2025-09-13 19:21:30"
+    }
+  ],
+  "sort": [],
+  "title": "FTPLUS v1.1",
+  "foldername": "FTPLUS v1.1",
+  "schfilename": "FTPLUS v1.1.json",
+  "schfilemtime": 1757786676590
+}

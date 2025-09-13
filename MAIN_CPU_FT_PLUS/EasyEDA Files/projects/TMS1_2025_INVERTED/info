@@ -1,0 +1,221 @@
+{
+  "uuid": "e14c12379f7c29b9a57c2ee9b8a6766f",
+  "path": "Offline/TMS1_2025_INVERTED",
+  "name": "TMS1_2025_INVERTED",
+  "content": "",
+  "created_at": "2024-12-22 15:28:38",
+  "updated_at": "2025-01-06 09:59:42",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "4640b34cf7f5e6122e43873c159ba135",
+      "title": "Schematic",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "20c7a1fc17d34b5789e5393524742b6e": 1,
+        "1f3ee760342e49189204cc773fbd6664": 17,
+        "1b4fa76c60d3420983ad73c191f94788": 17,
+        "2a43c56ef22b4d78935b331c8f2d2845": 1,
+        "154b66255b01a09bf1c88bb1ea89be78": 1,
+        "c2bfa0371eb24eb4a1e1a7d76d752fe1": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "100nF",
+          1,
+          "C0603",
+          "C1",
+          {
+            "Manufacturer Part": "CC0603KRX7R9BB104",
+            "Manufacturer": "YAGEO(国巨)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C14663"
+          }
+        ],
+        [
+          "CON_HEADER_1X05",
+          1,
+          "M1X5_NO_SS",
+          "J1",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "DTB113ZKT146_SLIM",
+          17,
+          "SC-59-3_L2.9-W1.7-P0.95-LS2.8-BR_1_2_SWAP",
+          "Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,Q17",
+          {
+            "Manufacturer Part": "DTB113ZKT146",
+            "Manufacturer": "ROHM(罗姆)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C509870"
+          }
+        ],
+        [
+          "100kΩ",
+          17,
+          "R0603",
+          "R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17",
+          {
+            "Manufacturer Part": "RC0603FR-07100KL",
+            "Manufacturer": "YAGEO(国巨)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C14675"
+          }
+        ],
+        [
+          "TMS2370",
+          1,
+          "TMS2370_DIP40_1.778_NO_SS",
+          "U1",
+          {
+            "Manufacturer Part": "TMS2370",
+            "Manufacturer": "Texas Instruments",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "PIC16F737-I/SS",
+          1,
+          "SSOP-28_L10.2-W5.3-P0.65-LS7.8-TL",
+          "U2",
+          {
+            "Manufacturer Part": "PIC16F737-I/SO",
+            "Manufacturer": "MICROCHIP(美国微芯)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C127941"
+          }
+        ]
+      ],
+      "updateTime": 1735774738,
+      "createTime": 1724544762,
+      "histories": [],
+      "created_at": "2024-08-25 01:12:42",
+      "updated_at": "2025-01-01 23:38:58"
+    },
+    {
+      "uuid": "71869898d57c7157d57851b968bdd67b",
+      "title": "PCB",
+      "filename": "PCB.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "b73b52e6110b4d2bbc79a881ca9817c3": 1,
+        "c6c31e4e441040e38f6e067498b98a43": 1,
+        "f8151fdc728a41ebbc304e11d39e5437": 1,
+        "8525060ac3b14600a7377077537c77dd": 1,
+        "2abfecde5eb24e8f9728ee815b30062f": 17,
+        "398691f1f785460098bbe5ee6590333c": 17
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "PIC16F737-I/SS",
+          1,
+          "TSSOP28L",
+          "U2",
+          {
+            "Manufacturer Part": "PIC16F737-I/SO",
+            "Manufacturer": "MICROCHIP(美国微芯)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C127941"
+          }
+        ],
+        [
+          "TMS2370",
+          1,
+          "TMS2370_DIP40_1.778_NO_SS",
+          "U1",
+          {
+            "Manufacturer Part": "TMS2370",
+            "Manufacturer": "Texas Instruments",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "DTB113ZKT146_SLIM",
+          17,
+          "SC-59-3_L2.9-W1.7-P0.95-LS2.8-BR_1_2_SWAP",
+          "Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,Q17,Q1,Q2,Q3,Q4,Q5,Q6,Q7",
+          {
+            "Manufacturer Part": "DTB113ZKT146",
+            "Manufacturer": "ROHM(罗姆)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C509870"
+          }
+        ],
+        [
+          "100kΩ",
+          17,
+          "R0603",
+          "R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17",
+          {
+            "Manufacturer Part": "RC0603FR-07100KL",
+            "Manufacturer": "YAGEO(国巨)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C14675"
+          }
+        ],
+        [
+          "100nF",
+          1,
+          "C0805",
+          "C1",
+          {
+            "Manufacturer Part": "NL0805B104M500CPBN",
+            "Manufacturer": "HUI JU(汇聚)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C720961"
+          }
+        ],
+        [
+          "SMD 2.54 PAD 1x5",
+          1,
+          "SMD PAD 1X5_PICKIT_SM_254",
+          "U3",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ]
+      ],
+      "updateTime": 1736114307,
+      "createTime": 1724544735,
+      "histories": [],
+      "created_at": "2024-08-25 01:12:15",
+      "updated_at": "2025-01-05 21:58:27"
+    }
+  ],
+  "sort": [],
+  "title": "TMS1_2025_INVERTED",
+  "foldername": "TMS1_2025_INVERTED",
+  "schfilename": "TMS1_2025_INVERTED.json",
+  "schfilemtime": 1735774738934
+}

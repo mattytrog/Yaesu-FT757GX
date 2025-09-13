@@ -1,0 +1,119 @@
+{
+  "uuid": "958018aedef2a334104b5a9438fd4c6a",
+  "path": "Offline/FT757GX%20light%20bar_RH",
+  "name": "FT757GX light bar_RH",
+  "content": "",
+  "created_at": "2024-12-10 12:12:50",
+  "updated_at": "2025-01-16 08:42:29",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "96dd4eb1a08f1208ae09637e2fcf429e",
+      "title": "Sheet_1",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "4931499263254a61a8c9828e8e2177b4": 4,
+        "0ef7fe9c3d7147eda4531b85f562a690": 4
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "LTW-150TK",
+          4,
+          "LED1206-R-RD_WHITE",
+          "LED1,LED2,LED3,LED4",
+          {
+            "Manufacturer Part": "LTW-150TK",
+            "Manufacturer": "LITEON(光宝)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C133134"
+          }
+        ],
+        [
+          "620Ω",
+          4,
+          "R1206",
+          "R1,R2,R3,R4",
+          {
+            "Manufacturer Part": "AECR1206F620RK9",
+            "Manufacturer": "RESI(开步睿思)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C352049"
+          }
+        ]
+      ],
+      "updateTime": 1735839216,
+      "createTime": 1733832772,
+      "histories": [],
+      "created_at": "2024-12-10 12:12:52",
+      "updated_at": "2025-01-02 17:33:36"
+    },
+    {
+      "uuid": "e5ccec1409cb40350d253bd6b959c985",
+      "puuid": "84e52ec098fa51145b82fe8461717d7b",
+      "title": "PCB_FT757GX light bar",
+      "filename": "PCB_FT757GX light bar.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "8e9b1be4bcb6420dbd1d09bf04b02792": 4,
+        "5cc68c8566a94e5c92c8b171a228e010": 4,
+        "0f4e23e2be0e4a3a9012b5efcfb9cba6": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "LTW-C191TS5",
+          3,
+          "LED0603-RD_WHITE",
+          "LED1,LED2,LED3",
+          {
+            "Manufacturer Part": "LTW-C191TS5",
+            "Manufacturer": "LITEON(光宝)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C125123"
+          }
+        ],
+        [
+          "1.3kΩ",
+          6,
+          "R0603",
+          "R1,R2,R3,R4,R5,R6",
+          {
+            "Manufacturer Part": "CR0603FA1301G",
+            "Manufacturer": "LIZ(丽智电子)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C100754"
+          }
+        ]
+      ],
+      "updateTime": 1737016949,
+      "createTime": 1733857655,
+      "histories": [],
+      "created_at": "2024-12-10 19:07:35",
+      "updated_at": "2025-01-16 08:42:29"
+    }
+  ],
+  "sort": [],
+  "title": "FT757GX light bar_RH",
+  "foldername": "FT757GX light bar_RH",
+  "schfilename": "FT757GX light bar_RH.json",
+  "schfilemtime": 1735839217394
+}
