@@ -1,6 +1,6 @@
 *******************************************************
 
-LOOKING FOR FTPLUS?
+LOOKING FOR FTPLUS? FULLY FEATURED CUSTOM FIRMWARE FOR LARGE PICS (EG 18F452 ETC)
 
 Supplement permalink! IMPORTANT! READ THIS!!!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/FTPLUS_SUPPLEMENT/SUPPLEMENT.pdf
@@ -13,14 +13,14 @@ https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/Gerbers
 
 *******************************************************
 
-LOOKING FOR FT_MINUS?
+LOOKING FOR FT_MINUS? LIGHTWEIGHT CUSTOM FIRMWARE FOR SMALL PIC CHIPS - STOCK FUNCTIONALITY ONLY!!!
 
 Firmware Permalink!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/STOCK_YAESU_FT_MINUS
 
 *******************************************************
 
-LOOKING FOR DISPLAY CPU?
+LOOKING FOR DISPLAY CPU? REPLACEMENT TMS2370
 
 Display CPU permalink!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/DISPLAY_CPU_TMS_2370
