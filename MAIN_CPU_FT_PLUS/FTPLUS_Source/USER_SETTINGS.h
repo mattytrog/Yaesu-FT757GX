@@ -32,8 +32,8 @@
 //#define ncodes
 //#define debug_cat_tx
 //#define cat_debug
-#define eeprom_save_debug32
-#define eeprom_save_debug8
+//#define eeprom_save_debug32
+//#define eeprom_save_debug8
 
 # byte PORTA = 0x0f80
 # byte PORTB = 0x0f81
