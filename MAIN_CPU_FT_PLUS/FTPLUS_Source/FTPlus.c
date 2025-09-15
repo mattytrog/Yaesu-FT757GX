@@ -4,7 +4,7 @@
 //Testing and research Siegmund Souza
 //PLL diagrams and valuable info Daniel Keogh
 #include <18F452.h>
-#include <bootloader.h>
+//#include <bootloader.h>
 #fuses HS,PUT, NOWDT,NOPROTECT,NOLVP, BORV27
 #use delay(clock=20000000)
 #use rs232(baud=4800, xmit=PIN_C6, rcv=PIN_C7, parity=N, stop=2, ERRORS)
