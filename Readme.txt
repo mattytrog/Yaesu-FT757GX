@@ -31,7 +31,7 @@ https://github.com/mattytrog/Yaesu-FT757GX/blob/main/DISPLAY_CPU_TMS_2370
 LOOKING FOR FTPLUS DIAL UNIT FOR NEW STYLE ENCODERS
 
 Dial unit permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/tree/main/MAIN_CPU_FT_MINUS_STOCK
+https://github.com/mattytrog/Yaesu-FT757GX/tree/main/NEW_ENCODER_DIAL_UNIT
 
 *******************************************************
 
