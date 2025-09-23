@@ -16,7 +16,8 @@ https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/Gerbers
 LOOKING FOR FT_MINUS? LIGHTWEIGHT CUSTOM FIRMWARE FOR SMALL PIC CHIPS - STOCK FUNCTIONALITY ONLY!!!
 
 Firmware Permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/STOCK_YAESU_FT_MINUS
+MAIN_CPU_FT_MINUS_STOCK
+https://github.com/mattytrog/Yaesu-FT757GX/tree/main/MAIN_CPU_FT_MINUS_STOCK
 
 *******************************************************
 
@@ -24,6 +25,13 @@ LOOKING FOR DISPLAY CPU? REPLACEMENT TMS2370
 
 Display CPU permalink!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/DISPLAY_CPU_TMS_2370
+
+*******************************************************
+
+LOOKING FOR FTPLUS DIAL UNIT FOR NEW STYLE ENCODERS
+
+Dial unit permalink!
+https://github.com/mattytrog/Yaesu-FT757GX/tree/main/MAIN_CPU_FT_MINUS_STOCK
 
 *******************************************************
 
