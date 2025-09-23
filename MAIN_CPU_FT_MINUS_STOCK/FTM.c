@@ -6,9 +6,9 @@
 //Stock Features Missing:
 //None
 
-#define 18f452
+//#define 18f452
 //#define 16f877a
-//#define 16f877
+#define 16f877
 
 
 #ifdef 18f452
@@ -37,7 +37,7 @@
 //#define invert_wideband_check
 #define store_to_eeprom
 #define refresh 250
-#define min_freq 1000
+#define min_freq 10000
 #define max_freq 3200000
 #define jump_500k 50000 //amt to jump when 500k button pressed. in kc * 10
 
@@ -93,7 +93,7 @@
 # bit k4=PORTE.1  //output // display bit 2
 # bit k8=PORTE.2  //output // display bit 3
 
-int8 BITSA,BITSB,BITSC,BITSD;
+int8 BITSA,BITSB,BITSC;
 
 # bit   tmp_pin4=BITSA.0
 # bit   tmp_pin5=BITSA.1 
@@ -127,7 +127,7 @@ char disp_buf[13] = {10,0,15,15,15,15,15,15,15,15,15,15,15};
 
 const int32 band_bank[11] = 
 {
-   100000, 180000, 350000, 700000, 1010000,
+   min_freq, 180000, 350000, 700000, 1010000,
    1400000, 1800000, 2100000, 2400000, 2800000, 3000000
 };
 
@@ -135,7 +135,7 @@ const int32 band_bank[11] =
 const int32 band_bank_edge[11] = 
 {
    50000, 200000, 380000, 720000, 1020000,
-   1435000, 1820000, 2145000, 2500000, 3000000, 3000000
+   1435000, 1820000, 2145000, 2500000, 3000000, max_freq
 };
 #endif
 
@@ -720,7 +720,7 @@ void down_button()
    {
       if(sw_500k)
       {
-         if (frequency > (min_freq)) frequency  -= jump_500k; else frequency = max_freq;
+         if (frequency > (min_freq + 50000)) frequency  -= jump_500k; else frequency = max_freq;
       }
       else
       {
@@ -747,7 +747,7 @@ void up_button()
    {
       if(sw_500k)
       {
-         if (frequency < (max_freq)) frequency += jump_500k; else frequency = min_freq;
+         if (frequency < (max_freq - 50000)) frequency += jump_500k; else frequency = min_freq;
       }
       else
       {
@@ -1419,18 +1419,24 @@ if(sw_pms) {WHILE(sw_pms){} break;}
       return 1;
 }
 
-void set_defaults()
+void set_defaults(int1 all)
 {
+   if(all)
+   {
    for (INT i = 0; i <= 18; i++)
    {save32 (i, 700000); }
    for (i = 19; i <= 29; i++)
    {save32 (i, 0); }
-   for (i = 30; i <= 40; i++)
+   }
+   for (int i = 30; i <= 40; i++)
    {save32 (i, band_bank[i - 30]); }
    for (i = 41; i <= 51; i++)
    {save32 (i, band_bank[i - 41]); }
    for (i = 52; i <= 53; i++)
    {save32 (i, 0); }
+   
+   if(all)
+   {
    //save32 (54, minimum_freq); save32 (55, maximum_freq);
    //save32 (3, 1010000);
    save8(vfo_n, 0); //Active VFO A / B
@@ -1439,6 +1445,7 @@ void set_defaults()
    save8(dcs_n, 15) ;
    save_cache_mem_mode_f (700000) ;
    save8(band_n,(calc_band (700000))) ;
+   }
    save8(checkbyte_n, 1); //Check byte
 #ifdef store_to_eeprom
       reset_cpu () ;
@@ -1478,15 +1485,18 @@ void main()
    k1 = 0;
    k4 = 1; delay_us(1);
    if(pb1) {write_eeprom (0xFF, 0xFF); beep(); delay_ms(1000); reset_cpu();}
-   //if(pb0) {program_vfos(); beep(); delay_ms(1000); reset_cpu();}
    k4 = 0;
-   
+   k8 = 1;
+   if(pb2) {write_eeprom (0xFF, 0xFE); beep(); delay_ms(1000); reset_cpu();}
+   k8 = 0;
    PLL_REF();
    enable_interrupts(INT_rda); //toggle interrupts to ensure serial is ready
    enable_interrupts(global); //enable interrupts FOR CAT
   
-   if (load8(checkbyte_n) != 1) {set_defaults (); load_values (); }
-      else load_values () ;
+   if (load8(checkbyte_n) == 0xFF) set_defaults (true);
+   if (load8(checkbyte_n) == 0xFE) set_defaults (false);   
+      
+      load_values () ;
 
       refresh_all_state();
       
