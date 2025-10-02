@@ -1,5 +1,5 @@
 Fitting and construction notes
-
+-------
 The shaft on the ENS1J encoder is wider and shorter than original. Care must be taken when refitting VFO knob. It may need slight adjustment. To make things easier, you can extend the shaft with some 7mm tube
 
 The front hole will require being drilled by 1mm (or 2) as the ferrule/collar assembly on ENS1J is 1mm wider
