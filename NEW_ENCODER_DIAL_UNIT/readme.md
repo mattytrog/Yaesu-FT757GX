@@ -11,3 +11,10 @@ It can be beneficial to fit the wires from the encoder / chip side. The silk scr
 to the component side, which isn't marked with silkscreen
 
 Nidec Copal encoders are not supported on v1.1 boards
+
+V1.2 boards:
+-
+
+Nidec Copal encoders are supported. These require 10k pullup resistors in the positions shown on the PCB. Mount in original dial board location
+Silkscreen changed to preferred side
+Programming / debug more accessible once fitted to radio
