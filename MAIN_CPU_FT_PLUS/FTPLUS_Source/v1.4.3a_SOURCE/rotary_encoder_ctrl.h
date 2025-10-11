@@ -4,7 +4,7 @@
 #define slow_speed_threshold 50
 #define stop_reset_count 5 //stop spin check sampling count. How fast dial reverts to lowest increment. Higher - longer, Lower, shorter. Default 25
 #define negative_pulse_sample_rate 8 //how often to check for negative pulse to fight against the decrement. Higher number means easier acceleration. Lower is harder (eg faster and harder). Default 50
-#define dial_timer_decrement 1 //overall timer decrement when spinning. How fast the main timker decreases. Default 5. Lower = longer spin before it speeds up. Not harder, just longer
+#define dial_timer_decrement 2 //overall timer decrement when spinning. How fast the main timker decreases. Default 5. Lower = longer spin before it speeds up. Not harder, just longer
 #define dial_timer_pullback 2 //dial increment when negative (eg when slowing down spinning). How hard we fight against the decrement. Needs to be more than decrement. Default 20. Lower = acceleration increments kick in earlier
 
 

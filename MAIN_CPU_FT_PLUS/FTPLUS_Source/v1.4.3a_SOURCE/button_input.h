@@ -906,7 +906,7 @@ void manual_adjust_frequency()
       
       int16 counter = 0;
       int8 current_digit = 1;
-      int8 res = 0;
+      int8 res = 0; int1 cat_update = 0;
       while (( mic_fast) || (!mic_up) || (!mic_dn)){current_digit = 0;}
       
       while(true)
@@ -1008,14 +1008,14 @@ start:
          }
          
 #ifdef include_cat      
-         if(!res)
-         {
-         if(check_cat() == 1) {flash = 0; counter = 0; temp_freq = frequency;}
-         }
+
+         if(check_cat() == 1) temp_freq = frequency;
+
 #endif     
          tx_oob_check(temp_freq);
          IF(temp_freq != old_temp_freq)
          {
+         cat_storage_buffer[active_vfo] = temp_freq;
          temp_freq = update_PLL(temp_freq);
          old_temp_freq = temp_freq;
          }

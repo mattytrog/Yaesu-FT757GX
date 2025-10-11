@@ -4,7 +4,7 @@ int8 program_mem_scan(INT32 curr_freq)
    INT8 curr_mem_ch, res, limit;
    INT1 counterstart, stopped, dir; 
    INT1 flash = 1;
-   INT16 counter, counter1, counter2, counter2max;
+   INT16 counter2max;
    INT32 freq1, freq2, start_freq, end_freq;
    INT8 state;
    int8 scanstate;

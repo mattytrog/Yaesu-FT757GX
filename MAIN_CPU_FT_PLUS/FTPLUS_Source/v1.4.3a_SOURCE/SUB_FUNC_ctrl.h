@@ -59,7 +59,7 @@ void beep()
 {
    Q64_tmp = Q64_val;
    Q64(4);
-   delay_cycles(cycles_delay);
+   delay_us(10);
    Q64(Q64_tmp);
 }
 

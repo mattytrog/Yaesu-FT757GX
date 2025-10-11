@@ -14,10 +14,7 @@ void split_value(int32 value, INT8 &d3, int8 &d4, int8 &d5, int8 &d6, int8 &d7, 
 
 void join_value(int32 &value, INT8 d3, int8 d4, int8 d5, int8 d6, int8 d7, int8 d8, int8 d9)
 {
-int32 temp_value = 0;
-temp_value = (((int32)d3 * 1000000) + ((int32)d4 * 100000) + ((int32)d5 * 10000) + ((int32)d6 * 1000) + ((int32)d7 * 100)+((int32)d8 * 10) + ((int32)d9));
-value = temp_value;
-//!
+value = (((int32)d3 * 1000000) + ((int32)d4 * 100000) + ((int32)d5 * 10000) + ((int32)d6 * 1000) + ((int32)d7 * 100)+((int32)d8 * 10) + ((int32)d9));
 }
 
 void set_dial_lock(int1 res);

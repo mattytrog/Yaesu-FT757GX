@@ -36,8 +36,10 @@ int8 read_all_state()
 
    IF (mem_mode == 0)
    {
-      IF (active_vfo == 0) {frequency = load_band_vfo_f (0, band); state = 1; }
-      IF (active_vfo == 1) {frequency = load_band_vfo_f (1, band); state = 2; }
+      cat_storage_buffer[0] = load_band_vfo_f (0, band);
+      cat_storage_buffer[1] = load_band_vfo_f (1, band);
+      IF (active_vfo == 0) {frequency = cat_storage_buffer[0]; state = 1; }
+      IF (active_vfo == 1) {frequency = cat_storage_buffer[1]; state = 2; }
    }
 
    IF (mem_mode == 1) {frequency = load_cache_mem_mode_f (); mem_channel = load8(mem_ch_n); state = 3; }
@@ -53,8 +55,11 @@ int8 refresh_all_state()
 
    IF (mem_mode == 0)
    {
-      IF (active_vfo == 0) {frequency = load_band_vfo_f (0, band); state = 1; }
-      IF (active_vfo == 1) {frequency = load_band_vfo_f (1, band); state = 2; }
+      cat_storage_buffer[0] = load_band_vfo_f (0, band);
+      cat_storage_buffer[1] = load_band_vfo_f (1, band);
+      IF (active_vfo == 0) {frequency = cat_storage_buffer[0]; state = 1; }
+      IF (active_vfo == 1) {frequency = cat_storage_buffer[1]; state = 2; }
+      
    }
 
    IF (mem_mode == 1) { mem_channel = load8(mem_ch_n); frequency = load_mem_ch_f (mem_channel);state = 3; }

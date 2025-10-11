@@ -35,8 +35,8 @@ int32 update_PLL(INT32 calc_frequency)
       STATIC int16 old_khz_freq;
       STATIC int32 old_band_freq;
       STATIC int8 old_PLLband;
-      STATIC int8 old_d100;
-      STATIC int8 old_d10;
+      STATIC int8 old_d100h;
+      STATIC int8 old_d10h;
       static int32 oldcheck;
       int32 newcheck = calc_frequency;
       
@@ -64,13 +64,13 @@ int32 update_PLL(INT32 calc_frequency)
 
       int32 tmp_frequency = offset_frequency;
       
-      int32 dmhz, d100k, d10k, d1k, d100, d10;
+      
       dmhz = 0;while(tmp_frequency > 99999){tmp_frequency -= 100000; dmhz+=1;}
       d100k = 0;while(tmp_frequency > 9999){tmp_frequency -= 10000; d100k+=1;}
       d10k = 0;while(tmp_frequency > 999){tmp_frequency -= 1000; d10k+=1;}
       d1k = 0;while(tmp_frequency > 99){tmp_frequency -= 100; d1k+=1;}
-      d100 = 0;while(tmp_frequency > 9){tmp_frequency -= 10; d100+=1;}
-      d10 = 0;while(tmp_frequency > 0){tmp_frequency -= 1; d10+=1;}
+      d100h = 0;while(tmp_frequency > 9){tmp_frequency -= 10; d100h+=1;}
+      d10h = 0;while(tmp_frequency > 0){tmp_frequency -= 1; d10h+=1;}
       
       int32 tmp_band_freq= (offset_frequency / 10000);  
       int16 tmp_khz_freq = ((d100k * 100) + (d10k * 10) + (d1k));
@@ -132,18 +132,18 @@ int32 update_PLL(INT32 calc_frequency)
           old_band_freq = tmp_band_freq;
        }
        //res2 = d10;
-       if(old_d100 != d100)
+       if(old_d100h != d100h)
        {
-       if(old_d100 < d100) load_100hz(d100+1);
-       if(old_d100 > d100) load_100hz(d100+1);
-       old_d100 = d100;
+       if(old_d100h < d100h) load_100hz(d100h+1);
+       if(old_d100h > d100h) load_100hz(d100h+1);
+       old_d100h = d100h;
        }
        
-       if(old_d10 != d10)
+       if(old_d10h != d10h)
        {
-       if(old_d10 < d10) load_10hz(d10);
-       if(old_d10 > d10) load_10hz(d10+1);
-       old_d10 = d10;
+       if(old_d10h < d10h) load_10hz(d10h);
+       if(old_d10h > d10h) load_10hz(d10h+1);
+       old_d10h = d10h;
        }
        res2 = read_counter();
        

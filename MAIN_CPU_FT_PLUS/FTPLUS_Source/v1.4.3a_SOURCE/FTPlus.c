@@ -1,9 +1,21 @@
 
-//Yaesu CPU firmware v1.4 (c)2025
+//Yaesu CPU firmware v1.4.3 (c)2025
 //Written by Matthew Bostock 
 //Testing and research Siegmund Souza
 //PLL diagrams and valuable info Daniel Keogh
-#include <18F452.h>
+
+//!v1.4.3a Changelog
+//!Fixed VFO B being duplicated into VFO A (Flrig Kenwood mode)
+//!Fixed VFO B not updated from cold start Kenwood mode
+//!Fixed button tuning receiving changes over CAT
+//!Removed code duplication, saving 2% on hex size
+//!Accelerated dial adjusted for more instant speed and control
+//!Changed beep hold-high period to ensure compatibility
+//!   with PIC-based VFO dial boards
+//!Added and tested support for PIC18F4520
+
+
+#include <18F4520.h>
 //#include <bootloader.h>
 #fuses HS,PUT, NOWDT,NOPROTECT,NOLVP, BORV27
 #use delay(clock=20000000)
@@ -143,15 +155,16 @@ load_values () ;
    update = 1;
    beep () ;
    countermax = 6000;
-   int8 res = 0;
       WHILE (true)
    {
       res1 = read_counter ();
 
+      #ifdef include_pms
       IF (pms)
       {
          IF (program_mem_scan (frequency)) update =  1;
       }
+      #endif
 
       #ifdef include_cat
       IF (! update)

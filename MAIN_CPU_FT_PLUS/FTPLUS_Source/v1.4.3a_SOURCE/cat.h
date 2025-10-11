@@ -35,26 +35,23 @@ void  RDA_isr(VOID)
 }
 
 void up_down(int1 updown, INT8 state);
-INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0;
-INT i;
+INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
 
-   VOID calc_if()
+
+   void calc_freq(int1 ifbuffer, int1 vfo)
    {
-      IF((mem_mode == 0)||(mem_mode == 1))
+      IF(mem_mode == 0)
       {
-         ifbuf[5] = 48 + d3; //Mhz10
-         ifbuf[6] = 48 + d4; //Mhz1
-         ifbuf[7] = 48 + d5; //Khz100
-         ifbuf[8] = 48 + d6; //Khz10
-         ifbuf[9] = 48 + d7; //Khz1
-         ifbuf[10] = 48 + d8; //Hz100
-         ifbuf[11] = 48 + d9; //Hz10
+         if(!vfo) tmp_val = cat_storage_buffer[0];
+         else tmp_val = cat_storage_buffer[1];
       }
-
+      IF(mem_mode == 1) tmp_val = load_mem_ch_f (mem_channel);
+      IF(mem_mode == 2) tmp_val = load_cb(cb_channel, cb_region);
       
-      IF(mem_mode == 2)
-      {
-         split_value(frequency, t1, t2, t3, t4, t5, t6, t7);
+         if(tmp_val) split_value(tmp_val, t1, t2, t3, t4, t5, t6, t7);
+         
+         if(ifbuffer)
+         {
          ifbuf[5] = 48 + t1;
          ifbuf[6] = 48 + t2;
          ifbuf[7] = 48 + t3;
@@ -62,8 +59,23 @@ INT i;
          ifbuf[9] = 48 + t5;
          ifbuf[10] = 48 + t6;
          ifbuf[11] = 48 + t7;
-      }
+         }
+         else
+         {
+         cat_ans[5] = 48 + t1;
+         cat_ans[6] = 48 + t2;
+         cat_ans[7] = 48 + t3;
+         cat_ans[8] = 48 + t4;
+         cat_ans[9] = 48 + t5;
+         cat_ans[10] = 48 + t6;
+         cat_ans[11] = 48 + t7;
+         }
+   }
 
+   VOID calc_if()
+   {
+      
+      calc_freq(1, 0);
       IF(mem_channel > 9)
       {
          ifbuf[26] = 48 + 1; //Mem CH first digit(eg 0)in ASCII not HEX
@@ -85,8 +97,7 @@ INT i;
 
    VOID send_if()
    {
-      //calc_IF();
-      FOR(i  = 0; i < 38; i++)
+      FOR(INT i  = 0; i < 38; i++)
       {
          putc(ifbuf[i]);
       }
@@ -94,12 +105,10 @@ INT i;
 
    VOID send_cat()
    {
-      delay_ms(1);
       for (INT i = 0; i < 24; i++)
       {
-         INT element = cat_ans[i];
-         putc(element);
-         IF(element == ';') break;
+         putc(cat_ans[i]);
+         IF(cat_ans[i] == ';') break;
       }
    }
 
@@ -111,18 +120,7 @@ INT i;
       }
    }
 
-   VOID cat_read_freq(int32 temp_value, int8 base)
-   {
-      int8 i3,i4,i5,i6,i7,i8,i9;
-      split_value(temp_value, i3,i4,i5,i6,i7,i8,i9);
-      cat_ans[base] = (48 + i3);
-      cat_ans[base + 1] = (48 + i4);
-      cat_ans[base + 2] = (48 + i5);
-      cat_ans[base + 3] = (48 + i6);
-      cat_ans[base + 4] = (48 + i7);
-      cat_ans[base + 5] = (48 + i8);
-      cat_ans[base + 6] = (48 + i9);
-   }
+
 
    INT32 temp_value;
 
@@ -137,14 +135,8 @@ INT i;
       cat_ans[base + 5] = buffer[10];
       cat_ans[base + 6] = buffer[11];
       
-      d3 = cat_ans[base] - 48; //10mhz
-      d4 = cat_ans[base + 1] - 48; //1mhz
-      d5 = cat_ans[base + 2] - 48; //100khz
-      d6 = cat_ans[base + 3] - 48; //10khz
-      d7 = cat_ans[base + 4] - 48; //1khz
-      d8 = cat_ans[base + 5] - 48; //100hz
-      d9 = cat_ans[base + 6] - 48;
-      join_value(temp_value, d3,d4,d5,d6,d7,d8,d9);
+      join_value(temp_value, cat_ans[base] - 48,cat_ans[base + 1] - 48,cat_ans[base + 2] - 48,
+      cat_ans[base + 3] - 48,cat_ans[base + 4] - 48,cat_ans[base + 5] - 48,cat_ans[base + 6] - 48);
       
       
       RETURN temp_value;
@@ -157,56 +149,40 @@ INT i;
    }
 
    
-   VOID FA_read()
+   VOID FX_read(int1 AB)
    {
       cat_flush();
-      cat_read_freq(cat_storage_buffer[0], 5);
+      calc_freq(0, AB);
       
       cat_ans[0] = 'F';
-      cat_ans[1] = 'A';
+      if(!AB) cat_ans[1] = 'A'; else cat_ans[1] = 'B';
       cat_ans[13] = ';';
       send_cat();
    }
 
-   VOID FB_read()
-   {
-      cat_flush();
-      cat_read_freq(cat_storage_buffer[1], 5);
-      
-      cat_ans[0] = 'F';
-      cat_ans[1] = 'B';
-      cat_ans[13] = ';';
-      send_cat();
-   }
-
-   VOID FA_set()
+   
+   VOID FX_set(int1 AB)
    {
       cat_flush();
       temp_value = cat_set_freq(5);
-      active_vfo = 0; frequency = temp_value;
-      cat_storage_buffer[0] = frequency;
-      FA_read();
+      active_vfo = AB; frequency = temp_value;
+      if(!AB) cat_storage_buffer[0] = frequency; else cat_storage_buffer[1] = frequency;
+      FX_read(AB);
    }
 
-   VOID FB_set()
-   {
-      cat_flush();
-      temp_value = cat_set_freq(5);
-      active_vfo = 1; frequency = temp_value;
-      cat_storage_buffer[1] = frequency;
-      FB_read();
-   }
 
-   VOID FR_ans(int8 res)
+   VOID FX_ans(int1 RT, int1 vfo)
    {
       cat_ans[0] = 'F';
-      cat_ans[1] = 'R';
-      IF(res == 0) cat_ans[2] = '0'; else cat_ans[2] = '1';
+      if(!RT) cat_ans[1] = 'R'; else cat_ans[1] = 'T';
+      IF(vfo == 0) cat_ans[2] = '0'; else cat_ans[2] = '1';
       cat_ans[3] = ';';
       send_cat();
    }
+   
 
-   VOID FR_set()
+
+   VOID FRT_set(int1 RT)
    {
       cat_flush();
 
@@ -215,7 +191,7 @@ INT i;
          IF(active_vfo == 1)save_band_vfo_f(1, band, cat_storage_buffer[1]);
          active_vfo = 0; save8(vfo_n,0);
          frequency = cat_storage_buffer[0];
-         FR_ans(0);
+         if(!RT) FX_ans(0,0); else FX_ans(1,0);
       }
 
       IF(buffer[2] == '1')
@@ -223,52 +199,25 @@ INT i;
          IF(active_vfo == 0)save_band_vfo_f(0, band, cat_storage_buffer[0]);
          active_vfo = 1; save8(vfo_n,1);
          frequency = cat_storage_buffer[1];
-         FR_ans(1);
+         if(!RT) FX_ans(0,1); else FX_ans(1,1);
       }
    }
+   
+  
 
-   VOID FR_read()
+   VOID FRT_read(int1 RT)
    {
       cat_flush();
-      IF(active_vfo == 0)FR_ans(0);
-      IF(active_vfo == 1)FR_ans(1);
-   }
-
-   VOID FT_ans(int8 res)
-   {
-      cat_ans[0] = 'F';
-      cat_ans[1] = 'T';
-      IF(res == 0) cat_ans[2] = '0'; else cat_ans[2] = '1';
-      cat_ans[3] = ';';
-      send_cat();
-   }
-
-   VOID FT_set()
-   {
-      cat_flush();
-
-      IF(buffer[2] == '0')
+      if(!RT)
       {
-         IF(active_vfo == 1)save_band_vfo_f(1, band, cat_storage_buffer[1]);
-         active_vfo = 0; save8(vfo_n,0);
-         frequency = cat_storage_buffer[0];
-         FT_ans(0);
+      IF(active_vfo == 0)FX_ans(0,0);
+      IF(active_vfo == 1)FX_ans(0,1);
       }
-
-      IF(buffer[2] == '1')
+      else
       {
-         IF(active_vfo == 0)save_band_vfo_f(0, band, cat_storage_buffer[0]);
-         active_vfo = 1; save8(vfo_n,1);
-         frequency = cat_storage_buffer[1];
-         FT_ans(1);
+      IF(active_vfo == 0) FX_ans(1,0);
+      IF(active_vfo == 1) FX_ans(1,1);
       }
-   }
-
-   VOID FT_read()
-   {
-      cat_flush();
-      IF(active_vfo == 0) FT_ans(0);
-      IF(active_vfo == 1) FT_ans(1);
    }
 
    VOID LK_ans(int8 res)
@@ -362,15 +311,15 @@ INT i;
          case 2: AI_SWITCH(); break;
          CASE 3: up_down(0, state); report_back = 1; break;
          CASE 4: up_down(1, state); report_back = 1; break;
-         CASE 5: FA_read(); break;
-         CASE 6: FB_read(); break;
-         CASE 7: FA_set(); report_back = 1; break;
-         CASE 8: FB_set(); report_back = 1; break;
+         CASE 5: FX_read(0); break;
+         CASE 6: FX_read(1); break;
+         CASE 7: FX_set(0); report_back = 1; break;
+         CASE 8: FX_set(1); report_back = 1; break;
          case 9: mode_SWITCH_kenwood(buffer[2]); report_back = 1; break; //FN
-         CASE 10: FR_set(); report_back = 2;break;
-         CASE 11: FR_read(); break;
-         CASE 12: FT_set(); report_back = 2;break;
-         CASE 13: FT_read(); break;
+         CASE 10: FRT_set(0); report_back = 2;break;
+         CASE 11: FRT_read(0); break;
+         CASE 12: FRT_set(1); report_back = 2;break;
+         CASE 13: FRT_read(1); break;
          case 14: calc_IF(); send_if(); break;
          CASE 15: IE_set(); break;
          CASE 16: LK_read(); break; //LK;
@@ -428,7 +377,7 @@ INT8 parse_cat_command_yaesu ()
          CASE 0x03: mem_op(4); beep(); break;
          CASE 0x04: dial_lock_button(); beep(); break;
          CASE 0x05: mem_op(1); beep(); break;
-         CASE 0x06: mem_op(3);; beep(); break;
+         CASE 0x06: mem_op(3); beep(); break;
          CASE 0x07: up_down(1, state); beep(); break;
          CASE 0x08: up_down(0, state); beep(); break;
          CASE 0x09: clarifier_button(); beep(); break;
@@ -497,3 +446,4 @@ int8 check_cat()
    }
    
       #endif
+

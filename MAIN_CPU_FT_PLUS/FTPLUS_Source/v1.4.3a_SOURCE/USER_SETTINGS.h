@@ -20,7 +20,7 @@
 #define speed1 2       //Slowest. Required for all dials...
 #define jump_500k 50000 //amt to jump when 500k button pressed. in kc * 10
 //PMS Settings
-#define scan_pause_count 500  // Pause after of squelch break
+#define scan_pause_count 255  // Pause after of squelch break
 #define VFO_dwell_time 2       // Delay after tuning to next frequency. Lower numbers = faster scanning speed, though may overshoot if too fast
 #define MR_dwell_time 50       
 #define CB_dwell_time 10       
@@ -118,9 +118,10 @@ int1 switch_cat = 0;
 #endif
 
 int32 frequency;
+int32 dmhz, d100k, d10k, d1k, d100h, d10h;
 
 int8 mem_channel, PLLband, band, mem_mode, dcs, speed_dial, mic_pressed, res1, res2, Q64_val, Q64_tmp, baud_rate_n;
-int8 d3= 0,d4= 0,d5= 0,d6= 0,d7= 0,d8= 0,d9= 0,d10= 0; 
+int8 d3= 0,d4= 0,d5= 0,d6= 0,d7= 0,d8= 0,d9= 0; 
 int1 long_press_down, long_press_up;
 int8 micres = 0;
 int8 vfodialres = 0;
