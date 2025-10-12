@@ -5,9 +5,7 @@ What is this?
 -
 This is a replacement CPU for the FT757GX transceiver by Yaesu.
 
-ENSURE YOUR CPU IS FAULTY BEFORE REPLACING IT WITH THIS!!!
-
-Changelogs go here:
+ENSURE YOUR CPU IS FAULTY BEFORE REPLACING IT WITH THIS!!!  
 
 v1.4.3b Changelog
 -
