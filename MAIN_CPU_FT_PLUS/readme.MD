@@ -1,23 +1,4 @@
-!! PLEASE PLEASE PLEASE READ THE SUPPLEMENT!! ALL THE INFO YOU NEED IS IN THERE, NOT HERE!   
-!! BOOTLOADER FACILITY ADDED FROM v1.3.  
-!! IF UPGRADING VIA BOOTLOADER, USE BOOTLOADER_VERSION  
-!! IF PROGRAMMING WITH PICKIT, OR OTHER PROGRAMMER, USE PICKIT VERSION  
-!! DIFFERENT BOOTLOADERS WITH DIFFERENT SPEEDS AVAILABLE.  
-
-Parts needed:
-
-PIC18F452
-2x22pF 0603 SMD or through hole capacitors
-1x10k 0603 or through hole resistor
-1x4K7 (4.7k) 0603 or through hole resistor
-20mhz crystal
-turned pins (2x20)
-
-Schematic enclosed...
-
-This is a replacement CPU for the FT757GX transceivers.
-PLL calcs, firmware, gerbers and corrections by M. Bostock
-Original PLL calcs and schematic by VK2TRP
+!! PLEASE PLEASE PLEASE READ THE SUPPLEMENT!! ALL THE INFO YOU NEED IS IN THERE, NOT HERE!
 
 What is this?
 
@@ -25,16 +6,20 @@ This is a replacement CPU for the FT757GX transceiver by Yaesu.
 
 ENSURE YOUR CPU IS FAULTY BEFORE REPLACING IT WITH THIS!!!
 
-Based on a PIC18F452. Programmed using Pickit3. Hex file built with CCS.
+Changelogs go here:
 
-Pickit header on CPU board for your cnvenience.
-
-Only fit this if your CPU(s) are faulty. Yes, some new features are handy, but thats no reason to rip out a perfectly good chip.
-In capitals: Ahem: IF YOU ARE THINKING OF DOING THIS BECAUSE OF LOW RECEIVE, TX PROBLEMS, NO POWER ETC... DON'T. 
-IT WILL BE YOUR SWITCHING DIODES IN THE BPF THAT ARE FAULTY. THIS WILL NOT HELP YOU.
+v1.4.3b Changelog
+Bugfix release. Offset calculation was changed to an incorrect value, due to out-of-band check actually changing global frequency, rather than just checking it and returning true/false.
 
 
-Disclaimer:
-You have only yourself to blame. This is BETA software. Expect bugs and mistakes. If you kill your radio or diagnose the incorrect fault, not my problem.
-But will still try to help.
+v1.4.3a Changelog
+Fixed VFO B being duplicated into VFO A (Flrig Kenwood mode)
+Fixed VFO B not updated from cold start Kenwood mode
+Fixed button tuning receiving changes over CAT
+Removed code duplication, saving 2% on hex size
+Accelerated dial adjusted for more instant speed and control
+Changed beep hold-high period to ensure compatibility
+  with PIC-based VFO dial boards
+Added and tested support for PIC18F4520
+
 
