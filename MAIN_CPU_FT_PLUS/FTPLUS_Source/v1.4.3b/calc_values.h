@@ -2,13 +2,13 @@ void split_value(int32 value, INT8 &d3, int8 &d4, int8 &d5, int8 &d6, int8 &d7, 
 {
    INT32 tmp_value = value;
 
-   d3  = 0; WHILE (tmp_value > 999999){tmp_value -= 1000000; d3 += 1; }
-   d4  = 0; WHILE (tmp_value > 99999){tmp_value -= 100000; d4 += 1; }
-   d5  = 0; WHILE (tmp_value > 9999){tmp_value -= 10000; d5 += 1; }
-   d6  = 0; WHILE (tmp_value > 999){tmp_value -= 1000; d6 += 1; }
-   d7  = 0; WHILE (tmp_value > 99){tmp_value -= 100; d7 += 1; }
-   d8  = 0; WHILE (tmp_value > 9) {tmp_value -= 10; d8 += 1; }
-   d9  = 0; WHILE (tmp_value > 0) {tmp_value -= 1; d9 += 1; }
+   d3  = 0; WHILE (tmp_value >= 1000000){tmp_value -= 1000000; d3 += 1; }
+   d4  = 0; WHILE (tmp_value >= 100000){tmp_value -= 100000; d4 += 1; }
+   d5  = 0; WHILE (tmp_value >= 10000){tmp_value -= 10000; d5 += 1; }
+   d6  = 0; WHILE (tmp_value >= 1000){tmp_value -= 1000; d6 += 1; }
+   d7  = 0; WHILE (tmp_value >= 100){tmp_value -= 100; d7 += 1; }
+   d8  = 0; WHILE (tmp_value >= 10) {tmp_value -= 10; d8 += 1; }
+   d9  = 0; WHILE (tmp_value >= 1) {tmp_value -= 1; d9 += 1; }
    //dbuf[0] = d3; dbuf[1] = (d4 * 10) + d5; dbuf[2] = (d6 * 10) + d7;dbuf[2] = (d8 * 10) + d9;
 }
 

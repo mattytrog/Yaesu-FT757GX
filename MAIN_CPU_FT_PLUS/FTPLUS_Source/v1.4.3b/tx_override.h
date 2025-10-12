@@ -32,7 +32,6 @@ int8 tx_oob_check(INT32 freq)
          gtx = 0;
       }
    } ELSE valid = 1;
-   frequency = freq;
    RETURN valid;
 }
 

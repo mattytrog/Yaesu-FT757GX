@@ -95,11 +95,11 @@ int32 update_PLL(INT32 calc_frequency)
       PLL1_NCODE_L0 = (tmp_khz_freq & 0xF);//final digit
       //PLL1 end
       PORTA = 0;
-       PORTB = 48 + PLL1_NCODE_L3;
+       PORTB = (3<<4) + PLL1_NCODE_L3;
        PLL1();
-       PORTB = 32 + PLL1_NCODE_L2;
+       PORTB = (2<<4) + PLL1_NCODE_L2;
        PLL1();
-       PORTB = 16 + PLL1_NCODE_L1;
+       PORTB = (1<<4) + PLL1_NCODE_L1;
        PLL1();
        PORTB = 0 + PLL1_NCODE_L0;
        PLL1();
@@ -121,11 +121,11 @@ int32 update_PLL(INT32 calc_frequency)
    
           
           
-          PORTB = 48 + PLL2_NCODE_L3; // Prepare latch
+          PORTB = (3<<4) + PLL2_NCODE_L3; // Prepare latch
           PLL2();
-          PORTB = 32 + PLL2_NCODE_L2; // Prepare latch
+          PORTB = (2<<4) + PLL2_NCODE_L2; // Prepare latch
           PLL2();
-          PORTB = 16 + PLL2_NCODE_L1;
+          PORTB = (1<<4) + PLL2_NCODE_L1;
           PLL2();
           PORTB = 0 + PLL2_NCODE_L0;
           PLL2();
