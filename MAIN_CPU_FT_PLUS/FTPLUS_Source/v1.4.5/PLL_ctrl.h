@@ -20,27 +20,22 @@ void PLL_REF()
    //01E in hex = 30
 }
 
+int32 oob_check_freq;
 
-
-int32 update_PLL(INT32 calc_frequency)
+void set_PLL(INT32 offset_frequency)
 {
 // We only need to update, if there is a new NCODE to send, ie when new frequency is requested. We don't touch ref latches(6,5,4), so no need to resend
 //if PLL update is requested for the SAME frequency, you are sent on your way and bounced back whence you came lol
+       //if(calc_frequency > max_freq) calc_frequency = max_freq;
       
-      int32 offset_frequency; //preserve original frequency incase we need it late
-      if(calc_frequency < min_freq) {calc_frequency = max_freq;}
-      if(calc_frequency > max_freq) {calc_frequency = min_freq;}
-      
-      offset_frequency = calc_frequency;
+      checked = 0;
+      oob_check_freq = offset_frequency;
       STATIC int16 old_khz_freq;
-      STATIC int32 old_band_freq;
+      STATIC int16 old_band_freq;
       STATIC int8 old_PLLband;
       STATIC int8 old_d100h;
       STATIC int8 old_d10h;
-      static int32 oldcheck;
-      int32 newcheck = calc_frequency;
       
-      if(newcheck == oldcheck) return newcheck;
       
       for (int i = 0; i < 10; i++)
       {
@@ -55,7 +50,7 @@ int32 update_PLL(INT32 calc_frequency)
 #ifdef include_offset_programming
       if(!setup_offset)
       {
-      int32 offset = load_offset_f();
+      offset = load_offset_f();
       if (offset >= 1000000) offset_frequency -= (offset - 1000000);
       else offset_frequency += offset;
       }
@@ -72,20 +67,20 @@ int32 update_PLL(INT32 calc_frequency)
       d100h = 0;while(tmp_frequency > 9){tmp_frequency -= 10; d100h+=1;}
       d10h = 0;while(tmp_frequency > 0){tmp_frequency -= 1; d10h+=1;}
       
-      int32 tmp_band_freq= (offset_frequency / 10000);  
-      int16 tmp_khz_freq = ((d100k * 100) + (d10k * 10) + (d1k));
+      int16 tmp_band_freq= (int32)(offset_frequency / 10000);  
+      int16 tmp_khz_freq = (int16)((d100k * 100) + (int16)(d10k * 10) + (int16)(d1k));
 
       if(tmp_khz_freq >= 500) tmp_khz_freq -=500; 
       tmp_khz_freq +=560;
       
-      int PLL1_NCODE_L3 = 0; //empty latch 48
-      int PLL1_NCODE_L2 = 0; //            32
-      int PLL1_NCODE_L1 = 0; //            16
-      int PLL1_NCODE_L0 = 0;//              0
-      int PLL2_NCODE_L3 = 0; //empty latch 48
-      int PLL2_NCODE_L2 = 0; //empty latch 32
-      int PLL2_NCODE_L1 = 0; //            16
-      int PLL2_NCODE_L0 = 0; //             0
+      int8 PLL1_NCODE_L3 = 0; //empty latch 48
+      int8 PLL1_NCODE_L2 = 0; //            32
+      int8 PLL1_NCODE_L1 = 0; //            16
+      int8 PLL1_NCODE_L0 = 0;//              0
+      int8 PLL2_NCODE_L3 = 0; //empty latch 48
+      int8 PLL2_NCODE_L2 = 0; //empty latch 32
+      int8 PLL2_NCODE_L1 = 0; //            16
+      int8 PLL2_NCODE_L0 = 0; //             0
       
       if(tmp_khz_freq != old_khz_freq)
       {
@@ -94,7 +89,6 @@ int32 update_PLL(INT32 calc_frequency)
       PLL1_NCODE_L1 = ((tmp_khz_freq >> 4) & 0xF);//middle digit
       PLL1_NCODE_L0 = (tmp_khz_freq & 0xF);//final digit
       //PLL1 end
-      PORTA = 0;
        PORTB = (3<<4) + PLL1_NCODE_L3;
        PLL1();
        PORTB = (2<<4) + PLL1_NCODE_L2;
@@ -146,12 +140,17 @@ int32 update_PLL(INT32 calc_frequency)
        old_d10h = d10h;
        }
        res2 = read_counter();
-       
-      oldcheck = newcheck;
+
       #ifdef debug
       puts("tuned PLL!");
       printf ("display frequency : %ld\r\n", calc_frequency);
       printf ("tuned frequency : %ld\r\n", offset_frequency);
       #endif
-      return calc_frequency;
+}
+
+void update_PLL(INT32 &offset_frequency)
+{
+if(offset_frequency > max_freq) offset_frequency = max_freq;
+if(offset_frequency < min_freq) offset_frequency = min_freq;
+set_PLL (offset_frequency);
 }

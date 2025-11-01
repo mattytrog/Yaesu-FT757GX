@@ -3,26 +3,21 @@ void clear_disp_buf()
    for (INT i = 4; i < 13; i++){disp_buf[i] = 15; }
 }
 
-void send_disp_buf(INT1 fast_update)
+void send_disp_buf(int16 refresh_rate)
 {
-   STATIC int8 count = 0;
-   STATIC int8 oldcheck;
-   INT8 newcheck = 0;
+   STATIC int16 count = 0;
 
-   IF (! force_update)
+   ++count;
+   if (count < refresh_rate)
    {
-      IF (fast_update)
-      {
-         ++count;
-         if (count < vfdrefresh) RETURN;
-      }
-
-      else{for (int i = 0; i < 13; i++){newcheck += disp_buf[i]; } if (newcheck == oldcheck) RETURN; }
-      count = 0;
-      oldcheck = 0;
+      IF (!force_update) RETURN;
    }
+  
+      count = 0;
 
-   WHILE (pb2){}
+   //WHILE (pb2){}
+   if(!pb2)
+   {
    WHILE (! pb2){} //and low again - then we send.
    for (INT i = 0; i < 13; i++)
    {
@@ -37,20 +32,31 @@ void send_disp_buf(INT1 fast_update)
       delay_us (30);
       disp_INT = 0;
       delay_us (370);
-      oldcheck += disp_buf[i];
    }
 
    //printf (" % d % d\r\n", newcheck, oldcheck);
    force_update = 0;
    k1 = 0; k2 = 0; k4 = 0; k8 = 0;
+   }
 }
 
-void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1 zeroes, int8 blank_digit, int8 display_type, int1 fast_update)
+void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1 zeroes, int8 blank_digit, int8 display_type, int8 refresh_rate)
 {
    int8 g3,g4,g5,g6,g7,g8,g9;
-   if(vfo_grid != 0xFF) disp_buf[4] = vfo_grid; else disp_buf[4] = 15;
+   if(channel_grid == 0xFF) disp_buf[12] = 15; else disp_buf[12] = channel_grid;
+   
+   if(vfo_grid != 0xFF)
+   {
+      IF (vfo_grid == 1){disp_buf[4] = 1; disp_buf[12] = 15;}
+      IF (vfo_grid == 2){disp_buf[4] = 12; disp_buf[12] = 15;}
+      IF (vfo_grid == 3){disp_buf[4] = 2;}
+   } else {disp_buf[4] = 15; }
+   
+   
+   
    if(dcs_grid != 0xFF) disp_buf[5] = dcs_grid; else disp_buf[5] = 15; 
-   if(channel_grid != 0xFF) disp_buf[12] = channel_grid; else disp_buf[12] = 15;
+   
+   
    split_value (value, d3, d4, d5, d6, d7, d8, d9);
    
    g3 = d3; g4 = d4; g5 = d5; g6 = d6; g7 = d7; g8 = d8; g9 = d9;
@@ -79,34 +85,37 @@ void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1
    IF (display_type == 0){disp_buf[6] = g3; disp_buf[7] = g4; disp_buf[8] = g5; disp_buf[9] = g6; disp_buf[10] = g7; disp_buf[11] = g8; }
    IF (display_type == 1){disp_buf[6] = g4; disp_buf[7] = g5; disp_buf[8] = g6; disp_buf[9] = g7; disp_buf[10] = g8; disp_buf[11] = g9; }
    IF (display_type == 2){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = g7; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
+#ifdef include_offset_programming   
    IF (display_type == 3){disp_buf[6] = g7; disp_buf[7] = g8; disp_buf[8] = g9; disp_buf[9] = 15; disp_buf[10] = 15; disp_buf[11] = 15; }
    IF (display_type == 4){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g7; disp_buf[10] = g8; disp_buf[11] = g9; }
    IF (display_type == 5){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = 0; disp_buf[9] = 0; disp_buf[10] = 0; disp_buf[11] = 15; }
+#endif
+#ifdef include_cb
+   IF (display_type == 6){disp_buf[6] = 15; disp_buf[7] = (cb_region + 1); disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
+#endif
+
+
    
-   IF (display_type == 6){disp_buf[6] = 1; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
-   IF (display_type == 7){disp_buf[6] = 2; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
-   IF (display_type == 8){disp_buf[6] = 3; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
-   send_disp_buf (fast_update);
+
 }
 
-void VFD_special_data(INT8 option)
-{
-   clear_disp_buf ();
-   IF (option == 2){disp_buf[9] = 12; disp_buf[10] = 14; }
-   IF (option == 3){disp_buf[10] = 11; }
-   IF (option == 4){disp_buf[6] = 10; disp_buf[7] = 1; disp_buf[8] = 1; disp_buf[9] = 15; disp_buf[10] = 12; disp_buf[11] = 11; }//ALL CB
-   IF (option == 5){disp_buf[6] = 13; disp_buf[7] = 1; disp_buf[8] = 10 ;disp_buf[10] = 10; }//DIA O
-   IF (option == 6){disp_buf[6] = 13; disp_buf[7] = 1; disp_buf[8] = 10 ;disp_buf[10] = 11; }//DIA 1
-   send_disp_buf (0);
-   delay_ms (500);
-}
-
+//!void VFD_special_data(INT8 option)
+//!{
+//!   clear_disp_buf ();
+//!   IF (option == 2){disp_buf[9] = 12; disp_buf[10] = 14; }
+//!   IF (option == 3){disp_buf[10] = 11; }
+//!   IF (option == 4){disp_buf[6] = 10; disp_buf[7] = 1; disp_buf[8] = 1; disp_buf[9] = 15; disp_buf[10] = 12; disp_buf[11] = 11; }//ALL CB
+//!   IF (option == 5){disp_buf[6] = 13; disp_buf[7] = 1; disp_buf[8] = 10 ;disp_buf[10] = 10; }//DIA O
+//!   IF (option == 6){disp_buf[6] = 13; disp_buf[7] = 1; disp_buf[8] = 10 ;disp_buf[10] = 11; }//DIA 1
+//!   send_disp_buf (0);
+//!   delay_ms (500);
+//!}
+//!
 
 
 void cls()
 {
    clear_disp_buf ();
-   WHILE (! pb2){}
    send_disp_buf (0);
 }
 
@@ -149,29 +158,7 @@ void cls()
 //!   }
 //!}
 //!
-void vfo_disp(INT8 vfo, int8 dcs, int32 freq, int8 ch, int1 fast_update)
-{
-   INT8 v1, v2, v10;
-   
-   v2 = dcs;
 
-   IF (mem_mode == 0)
-   {
-      IF (vfo == 0)v1 = 1;
-      IF (vfo == 1)v1 = 12;
-      v10 = 15;
-   }
-
-   
-   IF (mem_mode == 1)
-   {
-      v1 = 2;
-      v10 = ch;
-   }
-
-   
-   VFD_data (v1, v2, freq, v10, 0,0,fine_tune_display, fast_update);
-}
 
 void mode_SWITCH(int8 mode);
 void beep();
@@ -180,19 +167,14 @@ void blink_vfo_display(INT8 PA1, int8 PA2, int32 PA3, int8 PA4)
 {
    for (INT i = 0; i < 2; i++)
    {
-      INT8 temp_mode = mem_mode;
-      mode_SWITCH (1);
-      vfo_disp (PA1, PA2, PA3, PA4, 0) ;
-      beep (); delay_ms (50);
-      vfo_disp (PA1, PA2, PA3, 15, 0) ; delay_ms (150);
-      mode_SWITCH (temp_mode);
+
+      VFD_data (3, PA2, PA3, PA4, 0,0,0,0) ; send_disp_buf(0); delay_ms (50);
+      beep (); 
+      VFD_data (3, PA2, PA3, 0xFF, 0,0,0,0) ; send_disp_buf(0); ; delay_ms (150);
+      
+
    }
 }
 
-void refresh_screen(int8 state)
-{  
-   if(state != 4) vfo_disp (active_vfo, dcs, frequency, mem_channel, 0) ;
-   #ifdef include_cb
-   else VFD_data (0xFF, 0xFF, cb_channel, 0xFF, 0,0, (cb_region + 6), 0);
-   #endif
-}
+
+

@@ -1,9 +1,8 @@
 #ifdef include_cat
 int1 command_received = 0;
 char temp_byte;
-char buffer[30]; 
-int next_in = 0;
-int1 valid;
+char buffer[40]; 
+int8 next_in = 0;
 
 #INT_RDA
 void  RDA_isr(VOID)
@@ -17,21 +16,24 @@ void  RDA_isr(VOID)
          
             if(cat_mode == 0)
             {
-            if(temp_byte == 0x3B) SWITCH_CAT = 1;
+            if(temp_byte == 0x3B) {next_in = 0;SWITCH_CAT = 1;}
             if(next_in == 4) command_received = 1; else ++next_in;
+            
             }
             if(cat_mode == 1)
             {
             if(temp_byte == 0x3B) command_received = 1; else ++next_in;
+            if((next_in == 5) && (temp_byte == 0x05)) {next_in = 0; SWITCH_CAT = 1;}
             }
          } 
       }
+      //if(SWITCH_CAT) check_cat();
       if(command_received)
       {
          if(kbhit()) {getc();}
          next_in = 0;
       }
-
+clear_interrupt(INT_RDA);
 }
 
 void up_down(int1 updown, INT8 state);
@@ -40,40 +42,44 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
 
    void calc_freq(int1 ifbuffer, int1 vfo)
    {
-      IF(mem_mode == 0)
+      IF(mem_mode == 0) tmp_val = storage_buffer[vfo];
+
+      IF(mem_mode == 1) tmp_val = storage_buffer[2];
+#ifdef include_cb      
+      IF(mem_mode == 2)
       {
-         if(!vfo) tmp_val = cat_storage_buffer[0];
-         else tmp_val = cat_storage_buffer[1];
+         if(!cl) tmp_val = load_cb(cb_channel, cb_region);
+         else tmp_val = storage_buffer[3];
       }
-      IF(mem_mode == 1) tmp_val = load_mem_ch_f (mem_channel);
-      IF(mem_mode == 2) tmp_val = load_cb(cb_channel, cb_region);
+#endif
+      if(tmp_val) split_value(tmp_val, t1, t2, t3, t4, t5, t6, t7);
       
-         if(tmp_val) split_value(tmp_val, t1, t2, t3, t4, t5, t6, t7);
-         
-         if(ifbuffer)
-         {
-         ifbuf[5] = 48 + t1;
-         ifbuf[6] = 48 + t2;
-         ifbuf[7] = 48 + t3;
-         ifbuf[8] = 48 + t4;
-         ifbuf[9] = 48 + t5;
-         ifbuf[10] = 48 + t6;
-         ifbuf[11] = 48 + t7;
-         }
-         else
-         {
-         cat_ans[5] = 48 + t1;
-         cat_ans[6] = 48 + t2;
-         cat_ans[7] = 48 + t3;
-         cat_ans[8] = 48 + t4;
-         cat_ans[9] = 48 + t5;
-         cat_ans[10] = 48 + t6;
-         cat_ans[11] = 48 + t7;
-         }
+      if(ifbuffer)
+      {
+      ifbuf[5] = 48 + t1;
+      ifbuf[6] = 48 + t2;
+      ifbuf[7] = 48 + t3;
+      ifbuf[8] = 48 + t4;
+      ifbuf[9] = 48 + t5;
+      ifbuf[10] = 48 + t6;
+      ifbuf[11] = 48 + t7;
+      }
+      else
+      {
+      cat_ans[5] = 48 + t1;
+      cat_ans[6] = 48 + t2;
+      cat_ans[7] = 48 + t3;
+      cat_ans[8] = 48 + t4;
+      cat_ans[9] = 48 + t5;
+      cat_ans[10] = 48 + t6;
+      cat_ans[11] = 48 + t7;
+      }
    }
 
    VOID calc_if()
    {
+      ifbuf[0] = 'I';
+      ifbuf[1] = 'F';
       
       calc_freq(1, 0);
       IF(mem_channel > 9)
@@ -94,13 +100,35 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
       IF(active_vfo == 1){ifbuf[30] = ('1'); ifbuf[32] = ('1'); }//VFO1(VFO B)
       ifbuf[31] = ('0'); //Scan(0 = off, 1 = on)
    }
+   
+   VOID cat_flush(int1 ifbuffer)
+   {
+      if(ifbuffer)
+      {
+      for(INT i  = 0; i < 37; i++)
+      {
+         IF(ifbuf[i] == ';') break;
+         ifbuf[i] = '0';
+      }
+      }
+      else
+      {
+      for(INT i  = 0; i < 25; i++)
+      {
+         
+         cat_ans[i] = '0';
+      }
+      }
+   }
 
    VOID send_if()
    {
       FOR(INT i  = 0; i < 38; i++)
       {
          putc(ifbuf[i]);
+         IF(ifbuf[i] == ';') break;
       }
+      
    }
 
    VOID send_cat()
@@ -110,15 +138,9 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
          putc(cat_ans[i]);
          IF(cat_ans[i] == ';') break;
       }
+      
    }
 
-   VOID cat_flush()
-   {
-      for(INT i  = 0; i < 24; i++)
-      {
-         cat_ans[i] = '0';
-      }
-   }
 
 
 
@@ -151,7 +173,7 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
    
    VOID FX_read(int1 AB)
    {
-      cat_flush();
+      cat_flush(0);
       calc_freq(0, AB);
       
       cat_ans[0] = 'F';
@@ -163,18 +185,19 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
    
    VOID FX_set(int1 AB)
    {
-      cat_flush();
+      cat_flush(0);
       temp_value = cat_set_freq(5);
-      active_vfo = AB; frequency = temp_value;
-      if(!AB) cat_storage_buffer[0] = frequency; else cat_storage_buffer[1] = frequency;
+      active_vfo = AB; 
+      storage_buffer[AB] = temp_value;
+      frequency = storage_buffer[AB]; 
       FX_read(AB);
    }
 
 
-   VOID FX_ans(int1 RT, int1 vfo)
+   VOID FX_ans(int1 T, int1 vfo)
    {
       cat_ans[0] = 'F';
-      if(!RT) cat_ans[1] = 'R'; else cat_ans[1] = 'T';
+      if(!T) cat_ans[1] = 'R'; else cat_ans[1] = 'T';
       IF(vfo == 0) cat_ans[2] = '0'; else cat_ans[2] = '1';
       cat_ans[3] = ';';
       send_cat();
@@ -182,33 +205,33 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
    
 
 
-   VOID FRT_set(int1 RT)
+   VOID FRT_set(int1 T)
    {
-      cat_flush();
+      cat_flush(0);
 
       IF(buffer[2] == '0')
       {
-         IF(active_vfo == 1)save_band_vfo_f(1, band, cat_storage_buffer[1]);
+         IF(active_vfo == 1)save_band_vfo_f(1, band, storage_buffer[1]);
          active_vfo = 0; save8(vfo_n,0);
-         frequency = cat_storage_buffer[0];
-         if(!RT) FX_ans(0,0); else FX_ans(1,0);
+         frequency = storage_buffer[0];
+         if(!T) FX_ans(0,0); else FX_ans(1,0);
       }
 
       IF(buffer[2] == '1')
       {
-         IF(active_vfo == 0)save_band_vfo_f(0, band, cat_storage_buffer[0]);
+         IF(active_vfo == 0)save_band_vfo_f(0, band, storage_buffer[0]);
          active_vfo = 1; save8(vfo_n,1);
-         frequency = cat_storage_buffer[1];
-         if(!RT) FX_ans(0,1); else FX_ans(1,1);
+         frequency = storage_buffer[1];
+         if(!T) FX_ans(0,1); else FX_ans(1,1);
       }
    }
    
   
 
-   VOID FRT_read(int1 RT)
+   VOID FRT_read(int1 T)
    {
-      cat_flush();
-      if(!RT)
+      cat_flush(0);
+      if(!T)
       {
       IF(active_vfo == 0)FX_ans(0,0);
       IF(active_vfo == 1)FX_ans(0,1);
@@ -231,7 +254,7 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
 
    VOID LK_set()
    {
-      cat_flush();
+      cat_flush(0);
 
       IF(buffer[2] == '0')
       {
@@ -250,7 +273,7 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
 
    VOID LK_read()
    {
-      cat_flush();
+      cat_flush(0);
 
       IF( ! dl)
       {
@@ -267,7 +290,7 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
    {
       IF(id_enable)
       {
-         cat_flush();
+         cat_flush(0);
          cat_ans[0] = idbuf[0];
          cat_ans[1] = idbuf[1];
          cat_ans[2] = idbuf[2];
@@ -292,11 +315,11 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
    {
       INT32 temp_value;
       INT8 report_back = 0;
-      INT8 state = read_state();
       INT i;
 
       //AI DNUP FAFB FN ID IF LK MC MD MR MW RC RDRU RT RXTX SC SP
       INT8 res = 0;
+      
       FOR(i  = 0; i < 31; i++)
       {
          IF((buffer[0]  == cat_comm[(i * 4)])&&(buffer[1] == cat_comm[(i * 4) + 1])&&(buffer[cat_comm[(i * 4) + 2]] == ';'))
@@ -309,8 +332,8 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
          //all no answer
          CASE 1: ID_read(); break; //ID
          case 2: AI_SWITCH(); break;
-         CASE 3: up_down(0, state); report_back = 1; break;
-         CASE 4: up_down(1, state); report_back = 1; break;
+         CASE 3: btn_dn(0); report_back = 1; break;
+         CASE 4: btn_up(0); report_back = 1; break;
          CASE 5: FX_read(0); break;
          CASE 6: FX_read(1); break;
          CASE 7: FX_set(0); report_back = 1; break;
@@ -326,7 +349,7 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
          CASE 17: LK_set(); report_back = 2; break; //LK + 0 or 1;
          CASE 18: break; //MC
          CASE 19: dummy_mode = (buffer[2]); save8(dummy_mode_n,dummy_mode); break;
-         CASE 20: temp_value = cat_storage_buffer[active_vfo]; break;
+         CASE 20: temp_value = storage_buffer[active_vfo]; break;
          CASE 21: break; //MW
          CASE 22: break; //Clear clar freq
          CASE 23: break; //Clar freq - 1 or 10
@@ -336,7 +359,7 @@ INT8 t1 = 0, t2= 0, t3= 0, t4= 0, t5= 0, t6= 0, t7= 0; int32 tmp_val;
          CASE 27: cat_tx_request = 1; cat_transmit(cat_tx_request); break; //set tx mode
          CASE 28: break; //PMS on / off
          CASE 29: break; //split on / off
-         case 30: SWITCH_cat = 1; break;
+         case 30: SWITCH_CAT = 1; break;
          
          
       }
@@ -368,21 +391,20 @@ INT8 parse_cat_command_yaesu ()
       INT32 byte2_lower = buffer[1] & 0xF;
       INT32 byte1_upper = ((buffer[0] >> 4) & 0xF);
       INT32 byte1_lower = buffer[0] & 0xF;
-      INT8 state = read_state();
       
       SWITCH(byte5)
       {
          CASE 0x01: split_button(); beep(); break;
-         CASE 0x02: mem_op(5); beep(); break;
-         CASE 0x03: mem_op(4); beep(); break;
+         CASE 0x02: mrvfo(); break;
+         CASE 0x03: vfom(); break;
          CASE 0x04: dial_lock_button(); beep(); break;
-         CASE 0x05: mem_op(1); beep(); break;
-         CASE 0x06: mem_op(3); beep(); break;
-         CASE 0x07: up_down(1, state); beep(); break;
-         CASE 0x08: up_down(0, state); beep(); break;
+         CASE 0x05: vfoab(); break;
+         CASE 0x06: mvfo(); break;
+         CASE 0x07: btn_up(0); beep(); break;
+         CASE 0x08: btn_dn(0); beep(); break;
          CASE 0x09: clarifier_button(); beep(); break;
          CASE 0x0A: frequency = ((byte4_lower * 1000000) + (byte3_upper * 100000) + (byte3_lower * 10000) + (byte2_upper * 1000) + (byte2_lower * 100) + (byte1_upper * 10) + byte1_lower); break;
-         CASE 0x0B: mem_op(2); beep(); break;
+         CASE 0x0B: vfom_swap(); break;
          CASE 0x0F: frequency = ((byte1_upper * 1000000) + (byte1_lower * 100000) + (byte2_upper * 10000) + (byte2_lower * 1000) + (byte3_upper * 100) + (byte3_lower * 10) + byte4_upper); break;
           
          case 0xFC: beep(); IF( ! gen_tx)gen_tx = 1; else gen_tx = 0; break;
@@ -417,33 +439,37 @@ int8 check_cat()
          int8 catres = 0;
          IF (cat_mode == 0)
          {
-            IF (command_received)
-            {
-               command_received = 0;
-               catres = parse_cat_command_yaesu ();
-            }
+            IF (command_received) catres = parse_cat_command_yaesu ();
+           
          }
 
          
          IF (cat_mode == 1)
          {
-            IF (command_received)
-            {
-               command_received = 0;
-               catres = parse_cat_command_kenwood ();
-            }
+            IF (command_received) catres = parse_cat_command_kenwood ();
+            
          }
 
-         if (SWITCH_cat == 1)
+         if (SWITCH_CAT == 1)
          {
             IF (cat_mode == 0)cat_mode = 1; else cat_mode = 0;
             save8(cat_mode_n,cat_mode) ;
             beep () ;
-            SWITCH_cat = 0;
+            if(cat_mode == 1) {calc_if(); send_if();}
+            SWITCH_CAT = 0;
+         }
+         
+         if(catres)
+         
+         {
+               command_received = 0; 
+               catres = 2;
+               update_pll(frequency);
+               update_screen(get_state(0), 1);
          }
          return catres;
    
    }
-   
+ 
       #endif
 

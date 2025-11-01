@@ -56,6 +56,25 @@
 //!54 SPARE                D8
 //!55 SPARE                DC
 
+#define vfo_n 0
+#define band_n 1
+#define band_offset_n 2
+#define mode_n 3
+#define mem_ch_n 4
+#define dcs_n 5
+#define cb_ch_n 6
+#define cb_reg_n 7
+#define fine_tune_n 8
+#define dial_n 9
+#define savetimer_n 10
+#define cache_n 11
+#define cat_mode_n 12
+#define baud_n 13
+#define dummy_mode_n 14
+#define id_enable_n 15
+#define checkbyte_n 31
+
+
 //create ram store, follows eeprom-style IF enabled
 #ifndef store_to_eeprom
 int32 ram_bank[60];
@@ -136,8 +155,8 @@ int8 load8(int8 base)
 
 void save_band_vfo_f(int8 vfo, int8 band, int32 value)
 {
-   IF (vfo == 0)                                {save32 ((30 + band), value); cat_storage_buffer[0] = value; }
-   IF (vfo == 1)                                {save32 ((41 + band), value); cat_storage_buffer[1] = value; }
+   IF (vfo == 0)                                {save32 ((30 + band), value);}
+   IF (vfo == 1)                                {save32 ((41 + band), value);}
 }
 
 int32 load_band_vfo_f(int8 vfo, int8 band) 
@@ -167,30 +186,15 @@ void save_cache_mem_mode_f(int32 value)         {save32 (3, value);}
 int32 load_cache_mem_mode_f()                   {return (load32 (3));}
 
 
-void save_clar_RX_f(int32 value)    {save32(41, value);}
-int32 load_clar_RX_f()              {return (load32 (41));}
-void save_clar_TX_f(int32 value)    {save32(42, value);}
-int32 load_clar_TX_f()              {return (load32 (42));}
+void save_clar_RX_f(int32 value)    {clar_rx = value;}
+int32 load_clar_RX_f()              {return clar_rx;}
+void save_clar_TX_f(int32 value)    {clar_tx = value;}
+int32 load_clar_TX_f()              {return clar_tx;}
 
 //single bytes. Start at 0xE0
 
-#define vfo_n 0
-#define band_n 1
-#define band_offset_n 2
-#define mode_n 3
-#define mem_ch_n 4
-#define dcs_n 5
-#define cb_ch_n 6
-#define cb_reg_n 7
-#define fine_tune_n 8
-#define dial_n 9
-#define savetimer_n 10
-#define cache_n 11
-#define cat_mode_n 12
-#define baud_n 13
-#define dummy_mode_n 14
-#define id_enable_n 15
-#define checkbyte_n 31
-
+void save_vfo(int8 data) {save8(vfo_n, data);}
+void save_mode(int8 data) {save8(mode_n, data);}
+void save_band(int8 data) {save8(band_n, data);}
 
 

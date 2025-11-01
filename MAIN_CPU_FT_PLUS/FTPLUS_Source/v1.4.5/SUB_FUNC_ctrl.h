@@ -1,3 +1,5 @@
+#define cycles_delay 2
+
 void Q64(INT8 val)
 {
    //Q64 is Octal (000 - 111) (0 - 7) (Bit 8, port A is actually dial clock)
@@ -13,24 +15,22 @@ void Q64(INT8 val)
       case 1: PORTA = 8; break;
       case 2: PORTA = 4; break;
       case 3: PORTA = 12; break;
-      case 4: PORTA = 2; break;
+      case 4: PORTA = 2; delay_us(20); break;
       case 5: PORTA = 10; break;
       case 6: PORTA = 6; break;
       case 7: PORTA = 14; break;
    
    }
+   if(val) delay_cycles(cycles_delay);
    Q64_val = val;
 }
 
-#define cycles_delay 2
 
-void PLL1()
-{
-   Q64_tmp = Q64_val;
-   Q64(1);
-   delay_cycles(cycles_delay);
-   Q64(Q64_tmp);
-}
+
+void PLL1(){Q64_tmp = Q64_val; Q64(1); Q64(Q64_tmp);}
+void counter_preset_enable(){Q64_tmp = Q64_val; Q64(2); Q64(Q64_tmp);}
+void banddata(){Q64_tmp = Q64_val; Q64(3); Q64(Q64_tmp);}
+void beep(){Q64_tmp = Q64_val; Q64(4); Q64(Q64_tmp);}
 
 void PLL2()
 {
@@ -39,29 +39,7 @@ void PLL2()
    CPU_36_BIT128 = 0;
 }
 
-void counter_preset_enable()
-{
-   Q64_tmp = Q64_val;
-   Q64(2);
-   delay_cycles(cycles_delay);
-   Q64(Q64_tmp);
-}
 
-void banddata()
-{
-   Q64_tmp = Q64_val;
-   Q64(3);
-   delay_cycles(cycles_delay);
-   Q64(Q64_tmp);
-}
-
-void beep()
-{
-   Q64_tmp = Q64_val;
-   Q64(4);
-   delay_us(10);
-   Q64(Q64_tmp);
-}
 
 
 void set_dial_lock(int1 res)
@@ -72,9 +50,14 @@ void set_dial_lock(int1 res)
 
 void set_clarifier(int1 res)
 {
+   if(res == 1) cl = 1;
+   if(res == 0) cl = 0;
    
+   if(mem_mode != 2)
+   {
    if(res  == 1){if(load_clar_TX_f() == 0) save_clar_TX_f(frequency);}
    if(res  == 0) save_clar_TX_f(0);
+   }
 }
 
 void set_split(int1 res)
@@ -94,7 +77,7 @@ void cat_transmit(INT1 tx_request)
 {
    #ifdef debug_cat_tx
 
-   //if (tx_request == 1) {Q64(5); dl = 1; dcs = get_dcs();} else {Q64(0); dl = 0; dcs = get_dcs();}
+   if (tx_request == 1) {Q64(5); dl = 1; dcs = get_dcs();} else {Q64(0); dl = 0; dcs = get_dcs();}
    #ELSE
 
    if (tx_request == 1) 
@@ -136,7 +119,7 @@ int8 read_counter()
    if(pind4) res +=8;
    if(pind5) res +=4;
    if(pind6) res +=2;
-   if(pind7) res +=1;
+   //if(pind7) res +=1;
    RETURN res;
 }
 

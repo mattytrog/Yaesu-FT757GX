@@ -1,32 +1,14 @@
 
-#define minimum_freq 10000
-#define maximum_freq 3200000
-#define vfdrefresh 5
+
+
+#define vfdrefresh 100
 #define btnrefresh 8
 
-//uncomment for bare minimum size. No mic buttons, dial acceleration, CB or CAT. I advise a bigger PIC!
-//#define small_rom 
-//remove bits and pieces if you wish, or problem is suspected
-#ifndef small_rom
-#define include_cat
-#define include_dial_accel
-#define include_cb
-#define include_offset_programming
-#define include_pms
-#define include_manual_tuning
-#endif
-
-#define store_to_eeprom
 #define speed1 2       //Slowest. Required for all dials...
-#define jump_500k 50000 //amt to jump when 500k button pressed. in kc * 10
-//PMS Settings
-#define scan_pause_count 255  // Pause after of squelch break
-#define VFO_dwell_time 2       // Delay after tuning to next frequency. Lower numbers = faster scanning speed, though may overshoot if too fast
-#define MR_dwell_time 50       
-#define CB_dwell_time 10       
-#define default_cat_mode 0       //0 = yaesu, 1 = kenwood
-#define vfo_button_tuning_flash_speed 1000
-#define default_save_timer 3 //roughly seconds. Not accurate. About a second or two off over 30 seconds. Close enough for agricultural.
+
+
+
+
 //#define debug
 //#define serial_mode
 //#define ncodes
@@ -59,16 +41,16 @@
 # bit sw_500k=PORTC.3  //input  // 500khz step switch
 # bit dial_dir=PORTC.4  //input  // Dial counting direction
 # bit mic_up=PORTC.5  //input  // mic up button
-# bit mic_dn=PORTC.6  //input  // mic down button
-# bit pinc7=PORTC.7  //output // remote (CAT) wire (may use this for some sort of debugging output)
+# bit mic_dn=PORTC.6  //input  // mic down button / cat TX
+# bit pinc7=PORTC.7  //output cat RX
 # bit sw_pms=PORTD.0  //input 
 # bit mic_fast=PORTD.1  //input  // microphone fst (fast) button
 # bit squelch_open=PORTD.2  //input  // Squelch open when high (for scanning)
 # bit tx_mode=PORTD.3  //input  // PTT/On The Air (even high when txi set)
-# bit pind4=PORTD.4  //input  // bcd counter sensing  bit 3
-# bit pind5=PORTD.5  //input  // used for saveing vfo bit 2
-# bit pind6=PORTD.6  //input  // even the undisplayed bit 1
-# bit pind7=PORTD.7  //input  // 10hz component       bit 0
+# bit pind4=PORTD.4  //input  // bcd counter bit 3
+# bit pind5=PORTD.5  //input  // bit 2
+# bit pind6=PORTD.6  //input  // bit 1
+# bit pind7=PORTD.7  //input  // bit 0
 # bit k2=PORTE.0  //output // display bit 1   also these bits are for scanning the keypad
 # bit k4=PORTE.1  //output // display bit 2
 # bit k8=PORTE.2  //output // display bit 3
@@ -82,7 +64,7 @@ int8 BITSA,BITSB,BITSC,BITSD,BITSE;
 # bit   gen_tx=BITSA.4 
 # bit   dl=BITSA.5  
 # bit   active_vfo=BITSA.6
-# bit   tick=BITSA.7
+# bit   pause_cat=BITSA.7
 # bit   fine_tune_display=BITSB.0 
 # bit   sl=BITSB.1 
 # bit   cl=BITSB.2 
@@ -94,7 +76,7 @@ int8 BITSA,BITSB,BITSC,BITSD,BITSE;
 # bit   timerstart = BITSC.0
 # bit   long_press = BITSC.1
 # bit   setup_offset = BITSC.2
-# bit   update = BITSC.3
+# bit   savetimerON = BITSC.3
 # bit   gtx = BITSC.4
 # bit   stx = BITSC.5
 # bit   ctx = BITSC.6
@@ -106,37 +88,30 @@ int8 BITSA,BITSB,BITSC,BITSD,BITSE;
 # bit   cat_tx_transmitting = BITSD.4
 # bit   id_enable = BITSD.5
 # bit   mic_down = BITSD.6
-# bit   savetimerON = BITSD.7
+
 # bit   split_transmit = BITSE.0
 # bit   flash = BITSE.1
+# bit   counterstart = BITSE.3
+# bit   valid = BITSE.4
+# bit   checked = BITSE.5
+# bit   SWITCH_CAT = BITSE.6
+# bit   cb_disabled = BITSE.7
 #ifdef include_cat
 
 int32 baud_rate;
 int8 dummy_mode;
-int1 switch_cat = 0;
+int8 catres = 0;
 
 #endif
 
-int32 frequency;
-int32 dmhz, d100k, d10k, d1k, d100h, d10h;
+int32 frequency, offset, clar_rx, clar_tx;
+int32 storage_buffer[4];
+int32 min_freq = 0, max_freq = 0;
+
+int16 dmhz, d100k, d10k, d1k, d100h, d10h;
+unsigned int16 counter = 0, counter1 = 0;
+
 
 int8 mem_channel, PLLband, band, mem_mode, dcs, speed_dial, mic_pressed, res1, res2, Q64_val, Q64_tmp, baud_rate_n;
 int8 d3= 0,d4= 0,d5= 0,d6= 0,d7= 0,d8= 0,d9= 0; 
-int1 long_press_down, long_press_up;
-int8 micres = 0;
-int8 vfodialres = 0;
-int8 cbdialres = 0;
-int8 btnres = 0;
-int8 txres = 0;
-int8 catres = 0;
-int8 counterstart = 0;
-int16 counter = 0;
-int16 counter1 = 0;
-int8 counter2 = 0;
-//int8 lvcount = 0;
-int16 countermax = 6000;
-int32 savetimer = 0;
-int32 savetimermax = 0;
-int32 cat_storage_buffer[2];
-int32 min_freq = 0;
-int32 max_freq = 0;
+int8 micres = 0, btnres = 0, pmsres = 0, counter2 = 0, refresh_rate = 0;

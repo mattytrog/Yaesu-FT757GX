@@ -1,39 +1,26 @@
-int8 tx_oob_check(INT32 freq)
+void tx_oob_check(INT32 freq)
 {
-   if(freq > max_freq) freq = max_freq;
-   if(freq < min_freq) freq = min_freq;
-   INT8 valid = 0;
-
-   IF ( ! gen_tx)
-   {
-      IF (tx_mode)
-      {
-         IF ( ! gtx)
-         {
-            for (INT i = 0; i < 10; i++)
+         for (INT i = 0; i < 10; i++)
             {
                IF ( (freq >= blacklist[i * 2]) && (freq <= blacklist[ (i * 2) + 1])) {valid = 1; break; }
+             ELSE valid = 0;
             }
-
-            IF ( ! valid)
-            {
-               beep () ;
-               WHILE (tx_mode) set_tx_inhibit (1);
-            }
-
-            gtx = 1;
-         }
-      }
-
-      ELSE
-      IF (gtx)
-      {
-         set_tx_inhibit (0) ;
-         gtx = 0;
-      }
-   } ELSE valid = 1;
-   RETURN valid;
+   checked = 1;
 }
+
+#INT_TIMER0
+void Timer0_isr(void){
+if(!gen_tx)
+{
+   if(!checked) tx_oob_check(oob_check_freq);
+   if(!valid) while(tx_mode) PORTA = 6;
+   
+}
+
+//set_timer0(t2);
+clear_interrupt(INT_TIMER0);
+}
+
 
 int8 transmit_check()
 {
@@ -64,19 +51,23 @@ int8 transmit_check()
    printf ("CAT TRANSMITTING % d", cat_tx_transmitting);
 
    #endif
-
+int8 state = get_state(0);
+static int8 old_state;
+if(state != 4) 
+{
    IF(sl)
    {
       IF (tx_mode)
       {
+         
          IF ( ! stx)
          {
-            save_band_vfo_f (active_vfo, band, frequency);
-            IF (active_vfo == 0){active_vfo = 1;}
-            else IF (active_vfo == 1){active_vfo = 0;}
-            frequency = load_band_vfo_f (active_vfo, band);
+            old_state = state;
+            if(state == 2) set_state(5);
+            else if (state == 1) set_state(6);
+            read_all_state();
             stx = 1;
-            RETURN 1;
+            RETURN 2;
          }
       }
 
@@ -84,12 +75,10 @@ int8 transmit_check()
       {
          IF (stx)
          {
-            save_band_vfo_f (active_vfo, band, frequency);
-            IF (active_vfo == 0){active_vfo = 1;}
-            else IF (active_vfo == 1){active_vfo = 0;}
-            frequency = load_band_vfo_f (active_vfo, band);
+            set_state(old_state);
+            read_all_state();
             stx = 0;
-            RETURN 1;
+            RETURN 2;
          }
       }
    }
@@ -103,8 +92,9 @@ int8 transmit_check()
          {
             save_clar_RX_f (frequency) ;
             frequency = load_clar_TX_f ();
+           
             ctx = 1;
-            RETURN 1;
+            RETURN 3;
          }
       }
 
@@ -112,16 +102,17 @@ int8 transmit_check()
       {
          IF (ctx)
          {
+            
             save_clar_TX_f (frequency) ;
             frequency = load_clar_RX_f ();
             ctx = 0;
-            RETURN 1;
+            RETURN 3;
          }
       }
    }
 
-   
-   tx_oob_check (frequency) ;
+} 
+
    
    RETURN 0;
 }
