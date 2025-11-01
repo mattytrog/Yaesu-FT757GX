@@ -7,20 +7,16 @@ This is a replacement CPU for the FT757GX transceiver by Yaesu.
 
 ENSURE YOUR CPU IS FAULTY BEFORE REPLACING IT WITH THIS!!!  
 
-v1.4.3b Changelog
+v1.4.5a Changelog
 -
-Bugfix release. Offset calculation was changed to an incorrect value, due to out-of-band check actually changing global frequency, rather than just checking it and returning true/false.
+All CB bands are now supported, from super super LOW to super super HIGH, as well as UK 27/81
+Full automatic CAT mode switching. Its now no longer necessary to change to Kenwood mode, or Yaesu mode.
+CAT should now auto-initialise on the first try.
 
-
-v1.4.3a Changelog
--
-Fixed VFO B being duplicated into VFO A (Flrig Kenwood mode)  
-Fixed VFO B not updated from cold start Kenwood mode  
-Fixed button tuning receiving changes over CAT  
-Removed code duplication, saving 2% on hex size  
-Accelerated dial adjusted for more instant speed and control  
-Changed beep hold-high period to ensure compatibility  
-  with PIC-based VFO dial boards  
-Added and tested support for PIC18F4520  
+This is automatic. Just make sure BAUD rate is correct (and stop bits etc) and you are good.
+CAT pause feature added
+Further optimisations. Lots of uint32 removed, giving substantial reduction in space.
+Bugs fixed.
+Bugs added (probably XD).
 
 
