@@ -3,13 +3,13 @@
 LOOKING FOR FTPLUS? FULLY FEATURED CUSTOM FIRMWARE FOR LARGE PICS (EG 18F452 ETC)
 
 Supplement permalink! IMPORTANT! READ THIS!!!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/FTPLUS_SUPPLEMENT/SUPPLEMENT.pdf
+https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/SUPPLEMENT.pdf
 
 Firmware permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/FTPLUS_FIRMWARE
+https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/FTPLUS_FIRMWARE
 
 Gerbers permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/MAIN_CPU_FT_PLUS/Gerbers
+https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/Gerbers
 
 *******************************************************
 
