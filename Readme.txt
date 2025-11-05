@@ -11,6 +11,12 @@ https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/FTPLUS_FIRMWARE
 Gerbers permalink!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/Gerbers
 
+Updater app permalink!
+https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/FTPlus_UPDATER_APP
+
+PICKIT FLASHABLE BOOTLOADERS permalink!
+https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/FLASHABLE_BOOTLOADERS
+
 *******************************************************
 
 LOOKING FOR FT_MINUS? LIGHTWEIGHT CUSTOM FIRMWARE FOR SMALL PIC CHIPS - STOCK FUNCTIONALITY ONLY!!!
