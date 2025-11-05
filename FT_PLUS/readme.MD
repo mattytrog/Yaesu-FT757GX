@@ -7,7 +7,7 @@ This is a replacement CPU for the FT757GX transceiver by Yaesu.
 
 ENSURE YOUR CPU IS FAULTY BEFORE REPLACING IT WITH THIS!!!  
 
-v1.4.5a Changelog
+v1.4.5 Changelog
 -
 All CB bands are now supported, from super super LOW to super super HIGH, as well as UK 27/81.    
 Full automatic CAT mode switching. Its now no longer necessary to change to Kenwood mode, or Yaesu mode.    
