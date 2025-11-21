@@ -1,0 +1,148 @@
+void send_disp()
+{
+   int8 null_cycles = disp_latches;
+   static int8 null_cycle_neg = 0;
+   static int8 null_cycle_pos = 0;
+   static int1 null_lock_neg = 0;
+   static int1 null_lock_pos = 0;
+   static int8 i = 0;
+   if((!null_lock_neg) && (!pb2) && (null_cycle_neg < null_cycles)) {++null_cycle_neg; null_lock_neg = 1; null_lock_pos = 0;}
+   else if((!null_lock_pos) && (pb2) && (null_cycle_pos < null_cycles)) {++null_cycle_pos; null_lock_pos = 1; null_lock_neg = 0;}
+   
+      if((pb2) && (null_cycle_neg == null_cycles) && (null_cycle_pos == null_cycles))
+      {
+         //k8 = 0; k4 = 0; k2 = 0; k1 = 0;
+         
+         if(!d_stop_bit)
+         {
+         
+         k8 = (disp_buf[i])&0xF; 
+         k4 = (disp_buf[i] >> 1)&0xF; 
+         k2 = (disp_buf[i] >> 2)&0xF; 
+         k1 = (disp_buf[i] >> 3)&0xF;
+         disp_INT = 1;
+         int8 j = 0;
+         while(j<display_interrupt_hold)
+         {
+            ++j;
+            delay_us(2);
+         }
+         j = 0;
+         disp_INT = 0;
+         i+=1;
+         }
+         
+         if((i >= 13) || (d_stop_bit)) 
+            {i = 0; 
+            null_cycle_neg = 0; 
+            null_cycle_pos = 0; 
+            null_lock_neg = 0; 
+            null_lock_pos = 0;}
+   
+         //
+      }
+//!   if(e_stop_bit)
+//!   {i = 0; 
+//!   null_cycle_neg = 0; 
+//!   null_cycle_pos = 0; 
+//!   null_lock_neg = 0; 
+//!   null_lock_pos = 0;
+//!   e_stop_bit = 0;}
+}
+   
+void clear_disp_buf()
+{
+   for (INT i = 4; i < 13; i++){disp_buf[i] = 15; }
+}
+
+
+void VFD_data(INT8 vfo_grid, int8 dcs_grid, int32 value, int8 channel_grid, int1 zeroes, int8 blank_digit, int8 display_type, int8 refresh_rate)
+{
+   int8 g3,g4,g5,g6,g7,g8,g9;
+   
+   if(vfo_grid != 0xFF)
+   {
+      IF (vfo_grid == 1){disp_buf[4] = 1; disp_buf[12] = 15;}
+      IF (vfo_grid == 2){disp_buf[4] = 12; disp_buf[12] = 15;}
+      IF (vfo_grid == 3){disp_buf[4] = 2;}
+   } else {disp_buf[4] = 15; }
+   
+   if(channel_grid == 0xFF)disp_buf[12] = 15;
+   else 
+   {
+      if(vfo_grid == 3)
+      {
+         if (channel_grid < 10) disp_buf[12] = channel_grid; 
+         else disp_buf[12] = channel_grid - 10;
+         }
+   }
+   
+   if(dcs_grid != 0xFF) disp_buf[5] = dcs_grid; else disp_buf[5] = 15; 
+   
+   
+   split_value (value, d3, d4, d5, d6, d7, d8, d9);
+   
+   g3 = d3; g4 = d4; g5 = d5; g6 = d6; g7 = d7; g8 = d8; g9 = d9;
+   if(!zeroes)
+   {
+   IF (value < 1000000) g3 = 15;
+   IF (value < 100000) g4 = 15;
+   IF (value < 10000) g5 = 15;
+   IF (value < 1000) g6 = 15;
+   if (value < 100) g7 = 15;
+   if (value < 10) g8 = 15;
+   if (value < 1) g9 = 0;   
+   }
+   
+   switch(blank_digit)
+   {
+   case 1: g3 = 15; break;
+   case 2: g4 = 15; break;
+   case 3: g5 = 15; break;
+   case 4: g6 = 15; break;
+   case 5: g7 = 15; break;
+   case 6: g8 = 15; break;
+   case 7: g9 = 15; break;
+   }
+   
+   IF (display_type == 0){disp_buf[6] = g3; disp_buf[7] = g4; disp_buf[8] = g5; disp_buf[9] = g6; disp_buf[10] = g7; disp_buf[11] = g8; }
+   IF (display_type == 1){disp_buf[6] = g4; disp_buf[7] = g5; disp_buf[8] = g6; disp_buf[9] = g7; disp_buf[10] = g8; disp_buf[11] = g9; }
+   IF (display_type == 2){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = g7; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
+#ifdef include_offset_programming   
+   IF (display_type == 3){disp_buf[6] = g7; disp_buf[7] = g8; disp_buf[8] = g9; disp_buf[9] = 15; disp_buf[10] = 15; disp_buf[11] = 15; }
+   IF (display_type == 4){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = 15; disp_buf[9] = g7; disp_buf[10] = g8; disp_buf[11] = g9; }
+   IF (display_type == 5){disp_buf[6] = 15; disp_buf[7] = 15; disp_buf[8] = 0; disp_buf[9] = 0; disp_buf[10] = 0; disp_buf[11] = 15; }
+#endif
+#ifdef include_cb
+   IF (display_type == 6){disp_buf[6] = 15; disp_buf[7] = (cb_region + 1); disp_buf[8] = 15; disp_buf[9] = g8; disp_buf[10] = g9; disp_buf[11] = 15; }
+#endif
+
+
+   
+
+}
+
+void cls()
+{
+   clear_disp_buf ();
+}
+
+
+void mode_SWITCH(int8 mode);
+void beep();
+
+void blink_vfo_display(INT8 PA1, int8 PA2, int32 PA3, int8 PA4, int8 cnt, int8 sm, int1 bp)
+{
+   for (INT i = 0; i < cnt; i++)
+   {
+
+      VFD_data (3, PA2, PA3, PA4, 0,0,sm,0) ; delay_ms (50);
+      if(bp) beep (); 
+      VFD_data (3, PA2, PA3, 0xFF, 0,0,sm,0) ; delay_ms (150);
+      
+
+   }
+}
+
+
+

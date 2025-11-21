@@ -1,0 +1,94 @@
+
+
+void split_value_fast(INT32 value, INT8 &d3, INT8 &d4, INT8 &d5, INT8 &d6, INT8 &d7, INT8 &d8, INT8 &d9)
+{
+   // divisors for 1,000,000 .. 1
+   static INT32 C[7]  = {1000000, 100000, 10000, 1000, 100, 10, 1};
+   // precomputed 8x, 4x, 2x for each divisor (ROM constants; no runtime multiply)
+   static INT32 C8[7] = {8000000, 800000, 80000, 8000, 800, 80, 8};
+   static INT32 C4[7] = {4000000, 400000, 40000, 4000, 400, 40, 4};
+   static INT32 C2[7] = {2000000, 200000, 20000, 2000, 200, 20, 2};
+
+   INT8 *out[7] = {&d3,&d4,&d5,&d6,&d7,&d8,&d9};
+
+   #define STEP(idx, DIGPTR)                       \
+      do{                                          \
+         INT8 digit = 0;                           \
+         if(value >= C8[idx]){ value -= C8[idx]; digit += 8; } \
+         if(value >= C4[idx]){ value -= C4[idx]; digit += 4; } \
+         if(value >= C2[idx]){ value -= C2[idx]; digit += 2; } \
+         if(value >=  C[idx]){ value -=  C[idx]; digit += 1; } \
+         *DIGPTR = digit;                          \
+      }while(0)
+
+   STEP(0, out[0]);  // millions
+   STEP(1, out[1]);  // hundred-thousands
+   STEP(2, out[2]);  // ten-thousands
+   STEP(3, out[3]);  // thousands
+   STEP(4, out[4]);  // hundreds
+   STEP(5, out[5]);  // tens
+   STEP(6, out[6]);  // ones
+
+   #undef STEP
+}
+
+void split_value(int32 value, INT8 &d3, int8 &d4, int8 &d5, int8 &d6, int8 &d7, int8 &d8, int8 &d9)
+{
+split_value_fast(value, d3,d4,d5,d6,d7,d8,d9);
+//!   INT32 tmp_value = value;
+//!
+//!   d3  = 0; WHILE (tmp_value >= 1000000){tmp_value -= 1000000; d3 += 1; }
+//!   d4  = 0; WHILE (tmp_value >= 100000){tmp_value -= 100000; d4 += 1; }
+//!   d5  = 0; WHILE (tmp_value >= 10000){tmp_value -= 10000; d5 += 1; }
+//!   d6  = 0; WHILE (tmp_value >= 1000){tmp_value -= 1000; d6 += 1; }
+//!   d7  = 0; WHILE (tmp_value >= 100){tmp_value -= 100; d7 += 1; }
+//!   d8  = 0; WHILE (tmp_value >= 10) {tmp_value -= 10; d8 += 1; }
+//!   d9  = 0; WHILE (tmp_value >= 1) {tmp_value -= 1; d9 += 1; }
+   //dbuf[0] = d3; dbuf[1] = (d4 * 10) + d5; dbuf[2] = (d6 * 10) + d7;dbuf[2] = (d8 * 10) + d9;
+}
+void join_value(int32 &value, INT8 d3, int8 d4, int8 d5, int8 d6, int8 d7, int8 d8, int8 d9)
+{
+value = (((int32)d3 * 1000000) + ((int32)d4 * 100000) + ((int32)d5 * 10000) + ((int32)d6 * 1000) + ((int32)d7 * 100)+((int32)d8 * 10) + ((int32)d9));
+}
+
+void set_dial_lock(int1 res);
+void set_clarifier(int1 res);
+void set_split(int1 res);
+
+int8 get_dcs()
+{
+   INT8 res = 15;
+   for(INT8 i  = 0; i < 8; i++)
+   {
+      IF((dl == dcs_res[(i * 4) + 1])&&(cl == dcs_res[(i * 4) + 2])&&(sl == dcs_res[(i * 4) + 3])){res = dcs_res[i * 4]; break; }
+   }
+
+   if(dl) set_dial_lock(1); else set_dial_lock(0);
+   if(cl) set_clarifier(1); else set_clarifier(0);
+   if(sl) set_split(1); else set_split(0);
+   save8(dcs_n,res);
+   RETURN res;
+}
+
+void set_dcs(INT8 res)
+{
+   for (INT8 i = 0; i < 8; i++)
+   {
+      IF(res == dcs_res[(i * 4)]){dl = dcs_res[(i * 4) + 1]; cl = dcs_res[(i * 4) + 2]; sl = dcs_res[(i * 4) + 3]; break;}
+   }
+   
+   if(dl) set_dial_lock(1); else set_dial_lock(0);
+   if(cl) set_clarifier(1); else set_clarifier(0);
+   if(sl) set_split(1); else set_split(0);
+   save8(dcs_n,res);
+}
+
+int8 calc_band(INT32 frequency)
+{
+   for(INT i  = 0; i < 10; i++)
+   {
+      IF((frequency >= band_bank[i])&&(frequency < band_bank[i + 1]))break;
+   }
+
+   RETURN i;
+}

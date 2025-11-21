@@ -1,0 +1,131 @@
+#define speed1 2       //Slowest. Required for all dials...
+
+
+//display driver settings = 370uS approx
+#define disp_int_tmr 117 //117 timer2 PR2 reg
+#define postscale 1 //1:1 postscale
+#define disp_latches 2 // frame-skip more frame skip = faster calculations, slower screen updates
+#define display_interrupt_hold 50
+//#define fast_split
+
+
+//#define debug
+//#define serial_mode
+//#define ncodes
+//#define debug_cat_tx
+//#define cat_debug
+//#define eeprom_save_debug32
+//#define eeprom_save_debug8
+
+# byte PORTA = 0x0f80
+# byte PORTB = 0x0f81
+# byte PORTC = 0x0f82
+# byte PORTD = 0x0f83
+# byte PORTE = 0x0f84
+# bit dial_clk=PORTA.0  //input  // from q66 counter input (normally high, when counter = 0, goes low for uS). unused. Using up/down counter = 0 which is same result. Use for TX
+# bit disp_int=PORTA.4  //output // display interupt
+# bit k1=PORTA.5  //output // display bit 0
+# bit pina6=PORTA.6
+# bit pina7=PORTA.7
+# bit CPU_BIT1=PORTB.0  //output // bus data bit 0 pll d0
+# bit CPU_BIT2=PORTB.1  //output //          bit 1     d1
+# bit CPU_BIT4=PORTB.2  //output //          bit 2     d2
+# bit CPU_BIT8=PORTB.3  //output //          bit 3     d3
+# bit CPU_33_BIT16=PORTB.4  //output // pll a0
+# bit CPU_34_BIT32=PORTB.5  //output //     a1
+# bit CPU_35_BIT64=PORTB.6  //output //     a2
+# bit CPU_36_BIT128=PORTB.7  //output // strobe for pll2  q42
+# bit pb0=PORTC.0  //input  // keypad pb0
+# bit pb1=PORTC.1  //input  // keypad pb1
+# bit pb2=PORTC.2  //input  // keypad pb2   // also tells us when not to write to the display
+# bit sw_500k=PORTC.3  //input  // 500khz step switch
+# bit dial_dir=PORTC.4  //input  // Dial counting direction
+# bit mic_up=PORTC.5  //input  // mic up button
+# bit mic_dn=PORTC.6  //input  // mic down button / cat TX
+# bit pinc7=PORTC.7  //output cat RX
+# bit sw_pms=PORTD.0  //input 
+# bit mic_fast=PORTD.1  //input  // microphone fst (fast) button
+# bit squelch_open=PORTD.2  //input  // Squelch open when high (for scanning)
+# bit tx_mode=PORTD.3  //input  // PTT/On The Air (even high when txi set)
+# bit pind4=PORTD.4  //input  // bcd counter bit 3
+# bit pind5=PORTD.5  //input  // bit 2
+# bit pind6=PORTD.6  //input  // bit 1
+# bit pind7=PORTD.7  //input  // bit 0
+# bit k2=PORTE.0  //output // display bit 1   also these bits are for scanning the keypad
+# bit k4=PORTE.1  //output // display bit 2
+# bit k8=PORTE.2  //output // display bit 3
+
+int8 BITSA,BITSB,BITSC,BITSD,BITSE;
+
+# bit   tmp_pin4=BITSA.0
+# bit   tmp_pin5=BITSA.1 
+# bit   tmp_pin6=BITSA.2 
+# bit   tmp=BITSA.3
+# bit   gen_tx=BITSA.4 
+# bit   dl=BITSA.5  
+# bit   active_vfo=BITSA.6
+# bit   pause_cat=BITSA.7
+# bit   fine_tune_display=BITSB.0 
+# bit   sl=BITSB.1 
+# bit   cl=BITSB.2 
+# bit   btn_down=BITSB.3 
+# bit   temp_cl = BITSB.4
+# bit   dir=BITSB.5
+# bit   pms = BITSB.6
+# bit   per_band_offset = BITSB.7
+# bit   sgo = BITSC.0
+# bit   long_press = BITSC.1
+# bit   setup_offset = BITSC.2
+# bit   savetimerON = BITSC.3
+# bit   gtx = BITSC.4
+# bit   stx = BITSC.5
+# bit   ctx = BITSC.6
+# bit   fine_tune = BITSC.7
+# bit   AI = BITSD.0
+# bit   cat_mode = BITSD.1
+# bit   save_AI = BITSD.2
+# bit   cat_tx_request = BITSD.3
+# bit   cat_tx_transmitting = BITSD.4
+# bit   id_enable = BITSD.5
+# bit   mic_down = BITSD.6
+# bit   cat_wait = BITSD.7
+# bit   split_transmit = BITSE.0
+# bit   flash = BITSE.1
+# bit   counterstart = BITSE.3
+# bit   valid = BITSE.4
+# bit   checked = BITSE.5
+# bit   SWITCH_CAT = BITSE.6
+# bit   cb_disabled = BITSE.7
+
+#define clarifier_button 1
+#define down_button 2
+#define up_button 3
+#define mvfo_button 4
+#define vfoab_button 5
+#define dial_lock_button 6
+#define vfom_button 7
+#define mrvfo_button 8
+#define split_button 9
+#define vfom_swap_button 10
+
+#define display_stop disable_interrupts(INT_TIMER2)
+#define display_start enable_interrupts(INT_TIMER2)
+#ifdef include_cat
+
+int32 baud_rate;
+int8 dummy_mode;
+int8 catres = 0;
+
+#endif
+
+int32 offset, clar_rx, clar_tx;
+int32 storage_buffer[5];
+int32 min_freq = 0, max_freq = 0;
+
+int16 dmhz, d100k, d10k, d1k, d100h, d10h;
+unsigned int16 counter = 0, counter1 = 0;
+
+
+unsigned int8 mem_channel, PLLband, band, m_mode, dcs, speed_dial, mic_pressed, res1, res2, Q64_val, Q64_tmp, baud_rate_n;
+int8 micres = 0, btnres = 0, pmsres = 0, counter2 = 0, refresh_rate = 0;
+

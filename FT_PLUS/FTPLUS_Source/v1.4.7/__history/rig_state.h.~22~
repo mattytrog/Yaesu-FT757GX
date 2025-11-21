@@ -1,0 +1,134 @@
+
+
+//!void save_f_state(int8 state)
+//!{
+//!   switch(state)
+//!   {
+//!   case 1: save_band_vfo_f (0, band, frequency);  break;
+//!   case 2: save_band_vfo_f (1, band, frequency);  break;
+//!   case 3: save8(mem_ch_n,mem_channel);  break;
+//!   #ifdef include_cb
+//!   case 4: save8(cb_ch_n, cb_channel); save8(cb_reg_n, cb_region); break;
+//!   #endif
+//!   }
+//!}
+
+void save_freq_f(int8 state)
+{
+   if (state == 1)                                {save32 ((30 + band), storage_buffer[1]);}
+   if (state == 2)                                {save32 ((41 + band), storage_buffer[2]);}
+   if (state == 3)                                {save32 (mem_channel+4, storage_buffer[3]);}
+}
+
+void load_freq_f(int8 state)
+{
+   if (state == 0)                                {storage_buffer[1] = (load32 (30 + band)); storage_buffer[2] = (load32 (41 + band));}
+   if (state == 1)                                storage_buffer[1] = (load32 (30 + band));
+   if (state == 2)                                storage_buffer[2] = (load32 (41 + band));
+   if (state == 3)                                storage_buffer[3] = (load32 (mem_channel+4));
+   if (state == 4)                                storage_buffer[4] = (load_cb(cb_channel, cb_region));
+}
+
+void load_all_freq()
+{
+   storage_buffer[1] = (load32 (30 + band));
+   storage_buffer[2] = (load32 (41 + band));
+   storage_buffer[3] = (load32 (mem_channel+4));
+   storage_buffer[4] = (load_cb(cb_channel, cb_region));
+}
+
+void save_all_freq()
+{
+   save32 ((30 + band),storage_buffer[1]);
+   save32 ((41 + band),storage_buffer[2]);
+}
+
+
+int32 freq_load(int8 state)
+{
+   switch(state)
+   {
+      case 1: return load32 (30 + band); break;
+      case 2: return load32 (41 + band); break;
+   }
+
+}
+
+void save_cb_state()
+{
+   save8(cb_ch_n, cb_channel); 
+   save8(cb_reg_n, cb_region);
+}
+
+void load_cb_state(int1 opt)
+{
+   if(opt)
+   {
+   cb_channel = load8(cb_ch_n);
+   cb_region = load8(cb_reg_n);
+   }
+   storage_buffer[4] = (load_cb(cb_channel, cb_region));
+}
+
+int8 get_state()
+{
+   INT8 state = 0;
+
+   IF (m_mode == 0)
+   {
+      IF (active_vfo == 0) state = 1;
+      IF (active_vfo == 1) state = 2;
+   }
+
+   IF (m_mode == 1) state = 3;
+#ifdef include_cb
+   IF (m_mode == 2) state = 4;
+#endif
+   RETURN state;
+}
+
+void set_state(int8 state)
+{
+   if(state == 1) {m_mode = 0; active_vfo = 0; save_vfo(0); save_mode(0);}
+   if(state == 2) {m_mode = 0; active_vfo = 1; save_vfo(1); save_mode(0);}
+   if(state == 3) {m_mode = 1; save_mode(1);}
+   if(state == 4) {m_mode = 2; save_mode(2);}
+   if(state == 5) {m_mode = 0; active_vfo = 0;}
+   if(state == 6) {m_mode = 0; active_vfo = 1;}
+}
+
+int8 get_state_vfo_auto()
+{
+   if(active_vfo == 0) return 1;
+   if(active_vfo == 1) return 2;
+   return 0;
+}
+
+//!int8 read_all_state()
+//!{
+//!   INT8 state = get_state();
+//!
+//!   IF (state == 1)frequency = load_band_vfo_f (0, band);
+//!   IF (state == 2)frequency = load_band_vfo_f (1, band);
+//!   if (state == 3) {mem_channel = load8(mem_ch_n); frequency = load_mem_ch_f (mem_channel);  }
+//!   #ifdef include_cb
+//!   IF (state == 4) {frequency = load_cb(cb_channel, cb_region); }
+//!   #endif
+//!   RETURN state;
+//!}
+//!
+
+
+
+
+
+
+void update_buffers(int32 value)
+{
+   int8 state = get_state();
+   if(state == 1) {storage_buffer[1] = value; storage_buffer[1] = load_band_vfo_f (1, band);}
+   if(state == 2) {storage_buffer[2] = value; storage_buffer[0] = load_band_vfo_f (0, band);}
+   if(state == 3) storage_buffer[3] = value;
+   if(state == 4) storage_buffer[4] = value;
+}
+

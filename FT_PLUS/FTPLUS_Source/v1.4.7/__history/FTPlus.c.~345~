@@ -1,0 +1,391 @@
+
+//Yaesu CPU firmware v1.4.6 (c)2025
+//Written by Matthew Bostock 
+//Testing and research Siegmund Souza and Marco Steneker
+//PLL diagrams and valuable info Daniel Keogh
+
+//v1.4.7 Changelog
+//New display driver.
+//Responsiveness is improved. Flicker on original TMS chips should be gone now
+//Overall smoothness should be as good, or better than stock.
+//Display interrupt timing is completely different now
+//New adjustments for display driver within source
+
+//individual VFO band control
+//Now each VFO / buffer has its own band control, so EG VFO A could be on band 3 (7.0000mhz) and VFO B could be on 4(10.1000mhz)
+
+//Now using 4xfrequency buffers to allow FTPlus to run more efficiently directly from RAM
+//Frequencies are no longer constantly rewritten to EEPROM, they are stored in RAM mostly
+//eg frequency swapping was done by copying a frequency from EEPROM to another EEPROM
+//slot, then rewriting. This is no longer done. All swaps occur within RAM and are flushed
+//to EEPROM when needed.
+
+#include <18F452.h>
+#include <bootloader.h>
+#fuses HS,PUT, NOWDT,NOPROTECT,NOLVP,BORV27
+#use delay(clock=20000000)
+#use rs232(baud=4800, xmit=PIN_C6, rcv=PIN_C7, parity=N, stop=2, ERRORS)
+
+#define minimum_freq 10000
+#define maximum_freq 3200000
+
+//uncomment for bare minimum size. No mic buttons, dial acceleration, CB or CAT. I advise a bigger PIC!
+//#define small_rom 
+//remove bits and pieces if you wish, or problem is suspected
+#ifndef small_rom
+#define include_cat                       //uncomment = disable CAT entirely
+#define include_dial_accel                //uncomment = no accelerated dial
+#define include_cb                        //uncomment = no CB function
+#define include_offset_programming        //uncomment = no offset correction for out of tune rigs
+#define include_pms                       //uncomment = remove PMS scanning feature
+#define include_manual_tuning             //uncomment = remove button tuning (accessed by dial lock long press, when dial locked
+#define include_savetimer_switch          //uncomment = remove ability to turn eeprom saving on or off with buttons. Instead we use defines in code
+//#define include_set_minmax                //uncomment = remove ability to reprogram minimum and maximum
+#endif
+
+#define store_to_eeprom
+#define jump_500k 50000                   //amt to jump when 500k button pressed. in kc * 10
+//PMS Settings
+#define scan_pause_count 3000              // Pause after of squelch break
+#define VFO_dwell_time 1                  // Delay after tuning to next frequency. Lower numbers = faster scanning speed, though may overshoot if too fast
+#define MR_dwell_time 200       
+#define CB_dwell_time 10       
+#define default_cat_mode 0                //0 = yaesu, 1 = kenwood
+#define default_baud_rate 8
+#define vfo_button_tuning_flash_speed 10
+#define default_save_timer 3              //roughly seconds. Not accurate. About a second or two off over 30 seconds. Close enough for agricultural.
+
+                                          //uncomment each not required CB band. Bands are still flashed, but flashed to be disabled
+#define super_super_low_CB
+#define super_low_CB
+#define low_CB
+#define mid_CB
+#define high_CB
+#define super_high_CB
+#define super_super_high_CB
+#define UK_CB
+
+
+#include "def_var.h"
+#include "arrays.h"
+#include "cb_bands.h"
+#include "eeprom.h"
+#include "calc_values.h"
+#include "rig_state.h"
+#include "SUB_FUNC_ctrl.h"
+#include "rotary_encoder_ctrl.h"
+#include "VFD_ctrl.h"
+#include "PLL_ctrl.h"
+#include "button_input.h"
+#include "button_logic.h"
+#include "User_functions.h"
+#include "cat.h"
+#include "tx_override.h"
+#include "PMS.h"
+
+#INT_TIMER0
+
+
+void t0_isr(void){
+if(!gen_tx)
+{
+   if(!checked) tx_oob_check(oob_check_freq);
+   if(!valid) while(tx_mode) PORTA = 6;
+}
+
+clear_interrupt(INT_TIMER0);
+}
+
+#INT_TIMER1
+void t1_isr(void)
+{
+static int8 fl_cnt = 0;
+if(fl_cnt < 255) ++fl_cnt; else fl_cnt = 0;
+if((fl_cnt) & 4) flash = 1; else flash = 0;
+
+clear_interrupt(INT_TIMER1);
+}
+
+#INT_TIMER2
+void t2_isr(void)
+{
+send_disp();
+clear_interrupt(INT_TIMER2);
+}
+
+void set_defaults()
+{
+   for (INT i = 0; i <= 18; i++) {save32 (i, 700000); }
+   for (i = 19; i <= 29; i++)    {save32 (i, 0); }
+   for (i = 30; i <= 40; i++)    {save32 (i, band_bank[i - 30]); }
+   for (i = 41; i <= 51; i++)    {save32 (i, band_bank[i - 41]); }
+   for (i = 52; i <= 53; i++)    {save32 (i, 0); }
+                                 save32 (54, minimum_freq); 
+                                 save32 (55, maximum_freq);
+                                 save_offset_f(0);
+                                 
+                                 save8(vfo_n, 0); //Active VFO A / B
+                                 save8(mode_n, 0); //Mem mode
+                                 save8(mem_ch_n, 0); //default mem channel
+                                 save8(fine_tune_n, 0); //Fine - tuning display (disabled by default)
+                                 save8(dial_n,0); //dial_accel / type 0 = disabled, 1 = type1
+                                 save8(dcs_n, 15) ;
+                                 save8(band_offset_n,0) ;
+                                 save8(cat_mode_n, default_cat_mode) ;
+                                 save8(baud_n,default_baud_rate);
+                                 save8(dummy_mode_n, 49) ;
+                                 save8(id_enable_n,0) ;
+                                 save8(savetimer_n, 1);
+   #ifdef include_cb
+                                 save8(cb_ch_n, 19);
+                                 save8(cb_reg_n, 3);
+   #endif
+                                 save8(checkbyte_n, 1); //Check byte
+#ifdef store_to_eeprom
+      reset_cpu () ;
+#endif
+}
+
+void load_values()
+{
+#ifdef store_to_eeprom
+      min_freq =        load32(54); 
+      max_freq =        load32(55);
+      active_vfo =      load8(vfo_n);
+      m_mode =        load8(mode_n);
+      mem_channel =     load8(mem_ch_n);
+      fine_tune =       load8(fine_tune_n);
+      per_band_offset = load8(band_offset_n);
+#ifdef include_cat
+      cat_mode =        load8(cat_mode_n);
+      baud_rate_n =     load8(baud_n);
+      dummy_mode =      load8(dummy_mode_n);
+      id_enable =       load8(id_enable_n);
+#endif
+      speed_dial =      load8(dial_n);
+      dcs =             load8(dcs_n);
+      savetimerON =     load8(savetimer_n);
+      offset =          load_offset_f();
+      #ifdef include_cb
+
+      cb_region =       load8(cb_reg_n);
+      cb_channel =      load8(cb_ch_n);
+
+      #endif
+
+#ELSE
+      min_freq =        minimum_freq;
+      max_freq =        maximum_freq;
+      active_vfo =      0;
+      m_mode =          0;
+      mem_channel =     0;
+      fine_tune =       0;
+      per_band_offset = 0;
+#ifdef include_cat
+      cat_mode =        default_cat_mode;
+      baud_rate_n =     3;
+      dummy_mode =      49;
+      id_enable =       0;
+#endif
+      speed_dial =      0;
+      dcs =             15;
+      band =            calc_band (700000);
+      savetimerON =     0;
+      offset =          load_offset_f();
+#ifdef include_cb
+      cb_region =       0;
+      cb_channel =      19;
+#endif
+
+#endif
+      
+   
+#ifdef include_cat
+      switch (baud_rate_n)
+      {
+         
+         case 1: set_uart_speed (1200); break;
+         case 2: set_uart_speed (2400); break;
+         case 3: set_uart_speed (4800); break;
+         case 4: set_uart_speed (9600); break;
+         case 5: set_uart_speed (19200); break;
+         case 6: set_uart_speed (38400); break;
+         case 7: set_uart_speed (57600); break;
+         case 8: set_uart_speed (115200); break;
+         default: set_uart_speed (4800); break;
+      }
+   #endif
+      set_dcs (dcs) ;
+      
+}
+
+void basic_setup()
+{
+   setup_adc (ADC_OFF) ;
+   set_tris_a (0b00001);                     set_tris_b (0b00000000);                     set_tris_c (0b11111111);  
+   set_tris_d (0b11111111);                  set_tris_e (0b000);
+   setup_timer_0(T0_EXT_H_TO_L|T0_DIV_128);  setup_timer_1(T1_INTERNAL | T1_DIV_BY_8);    setup_timer_2(T2_DIV_BY_16, disp_int_tmr, postscale);
+   clear_interrupt(INT_TIMER0);              clear_interrupt(INT_TIMER1);                 clear_interrupt(INT_TIMER2);
+   enable_interrupts(INT_TIMER0);            enable_interrupts(INT_TIMER1);               enable_interrupts(INT_TIMER2); 
+   #ifdef include_cat
+   clear_interrupt(INT_rda);                 enable_interrupts (INT_rda); 
+   #endif
+   enable_interrupts (global);
+   Q64 (0) ;
+   cls();
+   PLL_REF () ;
+   
+   mic_pressed =                             0; 
+   pms =                                     0;
+   AI =                                      0;
+   fine_tune_display =                       0;
+   counter1 =                                0;
+   counter =                                 0;
+   cat_tx_request =                          0;
+   stx =                                     0; 
+   ctx =                                     0;
+   pause_cat =                               0; 
+   cat_wait =                                0;
+#ifdef include_cat
+   command_received =                        0;
+   SWITCH_CAT =                              0;
+#endif
+#ifdef include_cb
+   check_cb();
+#endif
+}
+
+void load_system()
+{
+
+      if (load8(checkbyte_n) != 1) {set_defaults (); load_values ();}
+      else load_values () ;
+}
+
+void cold_boot_overrides()
+{
+   k1 = 1; delay_us (1);
+   if (pb0) gen_tx = 0; else gen_tx = 1;
+   if((gen_tx == 0) && (get_state() == 4)) {set_state(1);}
+   k1 = 0;
+   
+   int8 update = scan_buttons();
+#ifdef include_cat
+   if(update == split_button) {swap_cat_mode(); change_baud_rate();}
+   if(update == mrvfo_button) {cycle_mode_speed();}
+#endif
+   if(update == vfoab_button) {errorbeep(3); save8(checkbyte_n, 0xFF);}
+#ifdef include_savetimer_switch
+   if(update == vfom_button)  {toggle_savetimer();}
+#endif
+   load_system();
+   load_all_buffers();
+   calc_all_bands();
+}
+
+
+void main()
+{
+   
+   basic_setup();
+   cold_boot_overrides();
+   res1 = read_counter (); res2 = res1;
+   int8 state = get_state(); 
+   int8 update = 1;
+   int8 cat_update = 0;
+   while(true)
+   {
+      res1 = read_counter ();
+      
+      #ifdef include_pms
+      IF (pms){update = program_mem_scan (storage_buffer[get_state()]);}
+      #endif
+      
+      #ifdef include_cat
+      if((!pause_cat) && (!cat_wait))
+      {
+           cat_update = check_cat();
+           if(cat_update)
+           {
+           state = get_state();
+           counter = 100; //move counter above button scan threshold, but below maximum, so we get some cache time rather than immediate saving
+           }
+      }
+
+      IF (counter1 > 15000)
+      {
+         calc_IF () ; send_IF () ; counter1 = 0;
+      }
+      #endif
+      
+      if((!update) && (counter >= 100))
+      {
+         
+         update = buttons(1);
+         IF (update)
+         {
+            
+            IF (! fine_tune) update = buttonaction (update, 10);
+            ELSE update = buttonaction (update, 1);
+            if(update) state = get_state();
+         } 
+      }
+      if(!update) update = (transmit_check ()) ;
+   
+      if(!update)
+      {
+   
+         update = update_encoder_tuning(state);
+         if(update) 
+            {
+            if(baud_rate_n <= 4) cat_wait = 1; 
+            counter = 0;
+#ifdef include_cb
+            if(((state == 4) && (!cl)))load_cb_state(0);
+#endif
+            }
+         
+      }
+   
+       IF ((update) || (cat_update))
+       {
+         if(update == 1)
+         {
+            if(fine_tune) fine_tune_display = 1;
+            
+         } else fine_tune_display = 0; 
+         counterstart = 1;
+         update = 0; 
+         
+         update_screen(state);
+         int32 temp_freq = storage_buffer[state];
+         update_PLL (temp_freq) ;
+         storage_buffer[state] = temp_freq;
+         
+       
+      }
+      
+       if(counter == 1000) cat_wait = 0;
+      
+       if(counter == 6000)
+       {
+          fine_tune_display = 0; update = 2;
+          
+       }
+       
+       if(counter > 24000)
+       {
+          if(cat_update) {cat_update = 0; counter = 100;}
+          counterstart = 0;
+          calc_all_bands(); //update all bands in case we have missed a band update
+          if((!cl) && (!sl))
+          {
+            if(savetimerON == 1) {save_all_freq();}
+          }
+       }
+       
+      IF (counterstart) ++counter;
+      if(AI) ++counter1;
+   }
+}
+

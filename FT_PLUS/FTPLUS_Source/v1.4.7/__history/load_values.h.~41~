@@ -1,0 +1,72 @@
+
+
+
+
+
+
+
+
+#ifdef include_set_minmax
+void set_min_max()
+{
+   int1 set_max = 0;
+   int1 res = 0;
+   int32 tmp_limit_low = min_freq;
+   int32 tmp_limit_hi = max_freq;
+   VFD_data (0xFF, 0xFF, tmp_limit_low, 1,0,0, 0, 0);
+   while(true)
+   {
+      
+      if(!set_max)
+      {
+         if(tmp_limit_low < 1) tmp_limit_low = 0;
+         if(tmp_limit_low > 9999999) tmp_limit_low = 9999999;
+         res = basic_dial (tmp_limit_low, 100);
+         if(res) VFD_data (0xFF, 0xFF, tmp_limit_low, 1,0,0, 0, 0);
+      }
+      
+      if(set_max)
+      {
+         if(tmp_limit_hi < 1) tmp_limit_hi = 0;
+         if(tmp_limit_hi >= 9999999) tmp_limit_hi = 9999999;
+         res = basic_dial (tmp_limit_hi, 100);
+         if(res) VFD_data (0xFF, 0xFF, tmp_limit_hi, 2,0,0, 0, 0);
+      }
+      
+      if(!res)
+      {
+      
+         k4 = 1; delay_us (1);
+         if(pb0)
+         {
+            while(pb0){}
+            if(!set_max) 
+            {
+            
+            set_max = 1;
+            VFD_data (0xFF, 0xFF, tmp_limit_hi, 2,0,0, 0, 0);
+            }
+            else
+            {
+            
+            set_max = 0;
+            VFD_data (0xFF, 0xFF, tmp_limit_low, 1,0,0, 0, 0);
+            }
+            beep();
+         }
+            if(pb1) 
+            {
+            while(pb1){}
+            break;
+            }
+         
+      }
+   
+   }
+   k4 = 0;
+   save32 (54, tmp_limit_low);
+   save32 (55, tmp_limit_hi);
+   reset_cpu();
+}
+#endif
+

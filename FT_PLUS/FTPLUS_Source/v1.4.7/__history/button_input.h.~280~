@@ -1,0 +1,452 @@
+void update_screen(int8 state)
+{
+      if(!state) state = get_state();
+      switch(state)
+            {
+#ifdef include_cb
+               case 4:
+               
+                  if((!cl) || (temp_cl)) 
+                  {VFD_data (0xFF, dcs, cb_channel, 0xFF, 0,0, 6, 0); temp_cl = 0;}
+                  else 
+                  {
+                  VFD_data (0xFF,dcs, storage_buffer[state], 0xFF, 0,0, fine_tune_display, 0);
+                  }
+               break;
+ #endif              
+               default:
+                  VFD_data (get_state(),dcs, storage_buffer[state], mem_channel, 0,0, fine_tune_display, 0);
+               break;
+            }
+   
+}
+
+void blink()
+{
+   blink_vfo_display (0xFF, dcs, storage_buffer[get_state()], mem_channel,2,0,1);
+}
+
+void vfoab_handler()
+{
+   INT8 state = get_state ();
+#ifdef include_cb
+   if(state == 4) {save_cb_state(); cl = 0; dcs = get_dcs();set_state(vfo_auto());}
+#endif
+   if(state == 1) set_state(2); else set_state(1);
+}
+
+void vfom_swap_handler()
+{
+   
+   storage_buffer[0] = storage_buffer[3];
+   storage_buffer[3] = storage_buffer[vfo_auto()];
+   storage_buffer[vfo_auto()] = storage_buffer[0];
+   blink();
+}
+
+void mvfo_handler()
+{
+   int8 state = get_state();
+   switch(state)
+   {
+#ifdef include_cb
+      case 4: storage_buffer[vfo_auto()] = storage_buffer[4]; break;
+#endif
+      default: storage_buffer[vfo_auto()] = storage_buffer[3]; break;
+   }
+   blink();
+}
+
+void vfom_handler()
+{
+   int8 state = get_state();
+   switch(state)
+   {
+#ifdef include_cb
+      case 4: storage_buffer[3] = storage_buffer[4]; break;
+#endif
+      default: storage_buffer[3] = storage_buffer[state]; break;
+   }
+   save_freq_f(3);
+   blink();
+}
+
+void mrvfo_handler()
+{
+   int8 state = get_state();
+   switch(state)
+   {
+      case 3: state = vfo_auto(); break;
+      case 4: break;
+      default: state = 3; break;
+
+   }
+   
+   set_state(state);
+   calc_all_bands();
+}
+  
+void mode_SWITCH_kenwood(int8 mode)
+{
+   int8 state = 0;
+   IF(mode == (48 + 0))state = 1;
+   IF(mode == (48 + 1))state = 2;
+   IF(mode == (48 + 2))state = 3;
+   set_state(state);
+}
+
+void lock_dial_kenwood(INT8 mode)
+{
+   IF(mode == (48 + 0)) dl = 0;
+   IF(mode == (48 + 1)) dl = 1;
+   dcs = get_dcs();
+   save8(dcs_n,dcs);
+}
+
+#ifdef include_savetimer_switch
+void toggle_savetimer()
+{
+delay_ms(1000);
+if(savetimerON == 1) savetimerON = 0; else savetimerON = 1;
+errorbeep(savetimerON + 1);
+save8(savetimer_n, savetimerON);
+
+}
+
+#endif
+
+void toggle_fine_tune_display()
+{
+   IF(fine_tune == 1) fine_tune = 0; else fine_tune = 1;
+   errorbeep(fine_tune + 1);
+   save8(fine_tune_n,fine_tune);
+   RETURN;
+}
+
+void toggle_cat()
+{
+   if(pause_cat) pause_cat = 0; else pause_cat = 1;
+   cat_tx_request = 0; cat_transmit(cat_tx_request);
+   errorbeep(pause_cat + 1);
+}
+void toggle_per_band_offset()
+{
+   IF(per_band_offset == 1) per_band_offset = 0; else per_band_offset = 1;
+      errorbeep(per_band_offset + 1);
+   save8(band_offset_n,per_band_offset);
+   RETURN;
+}
+
+void toggle_speed_dial()
+{
+   #ifdef include_dial_accel
+   if(speed_dial) speed_dial = 0; else speed_dial = 1;
+   errorbeep(speed_dial + 1);
+   save8(dial_n,speed_dial);
+   RETURN;
+   #else
+   speed_dial = 0;
+   #endif
+}
+void dial_lock_button_handler()
+{
+   if(dl) dl = 0; else dl = 1;
+   dcs = get_dcs();
+}
+
+void clarifier_button_handler()
+{
+   if(cl) cl = 0; else {sl = 0; cl = 1;}
+   dcs = get_dcs();
+}
+
+void band_up(int8 value)
+{
+   switch(value)
+   {
+   case 1: IF(band1  == 9)band1 = 0; ELSE ++band1; save_band1(); break;
+   case 2: IF(band2  == 9)band2 = 0; ELSE ++band2; save_band2(); break;
+   }
+}
+
+void band_down(int8 value)
+{
+   switch(value)
+   {
+   case 1: IF(band1  == 0)band1 = 9; ELSE --band1; save_band1(); break;
+   case 2: IF(band2  == 0)band2 = 9; ELSE --band2; save_band2(); break;
+   }
+}
+
+void band_up_500()
+{
+   if (storage_buffer[vfo_auto()] < (max_freq)) 
+      storage_buffer[vfo_auto()] += jump_500k; else 
+         storage_buffer[vfo_auto()] = min_freq;
+}
+void band_down_500()
+{
+   if (storage_buffer[vfo_auto()] > (min_freq)) 
+      storage_buffer[vfo_auto()]  -= jump_500k; else 
+         storage_buffer[vfo_auto()] = max_freq;
+}
+void mem_ch_up()
+{
+   IF(mem_channel  < 14) ++mem_channel; ELSE mem_channel = 0;
+   save8(mem_ch_n,mem_channel);
+}
+void mem_ch_down()
+{
+   IF(mem_channel  > 0)--mem_channel; ELSE mem_channel = 14;
+   save8(mem_ch_n,mem_channel);
+}
+
+#ifdef include_cb
+void cb_ch_up()
+{
+   IF(cb_channel  < 40) ++cb_channel;
+   save8(cb_ch_n,cb_channel);
+}
+void cb_ch_down()
+{
+    IF(cb_channel  > 1)--cb_channel;
+    save8(cb_ch_n,cb_channel);
+}
+#endif
+
+void btn_up_handler(int8 state)
+{
+   if(!state) state = get_state();
+   if(sw_500k) state +=4;
+   if(state == 1) {save_freq_f(1); band_up(1); load_freq_f(1);}
+   if(state == 2) {save_freq_f(2); band_up(2); load_freq_f(2);}
+   if((state == 3) || (state == 7)) {state = 3; mem_ch_up(); load_freq_f(3);}
+   if((state == 5) || (state == 6)) band_up_500();
+#ifdef include_cb
+   if((state == 4) || (state == 8)){state = 4;cb_ch_up(); temp_cl = 1; load_freq_f(state);}
+#endif
+}
+
+void btn_dn_handler(int8 state)
+{
+   if(!state) state = get_state();
+   if(sw_500k) state +=4;
+   if(state == 1) {save_freq_f(1); band_down(1); load_freq_f(1);}
+   if(state == 2) {save_freq_f(2); band_down(2); load_freq_f(2);}
+   if((state == 3) || (state == 7)) {state = 3; mem_ch_down(); load_freq_f(state);}
+   if((state == 5) || (state == 6)) band_down_500();
+#ifdef include_cb
+   if((state == 4) || (state == 8)){state = 4; cb_ch_down(); temp_cl = 1; load_freq_f(state);}
+#endif
+}
+
+void split_button_handler()
+{
+   if(get_state() != 4)
+   {
+      if(sl) sl = 0; else {cl = 0; sl = 1;}
+      dcs = get_dcs();
+   }
+#ifdef include_cb
+   else
+   {
+      toggle_cb_region();
+   }
+#endif
+}
+
+
+
+
+void LONG_up()
+{
+   int8 state = get_state();
+   IF((state == 1) || (state == 2)) {IF(mem_channel  < 14)++mem_channel; save8(mem_ch_n,mem_channel);}
+   IF(state  == 3) {IF(band3  == 9)band3 = 0; ELSE ++band3; storage_buffer[3] = band_bank[band3]; }
+   blink();
+}
+
+void LONG_dn()
+{
+   int8 state = get_state();
+   IF((state == 1) || (state == 2)) {IF(mem_channel  > 0)--mem_channel; save8(mem_ch_n,mem_channel);}
+   IF(state  == 3) {IF(band3  == 0)band3 = 9; ELSE --band3; storage_buffer[3] = band_bank[band3];}
+   blink();
+}
+
+void program_offset();
+void LONG_press_clarifier() {program_offset();}
+void LONG_press_mvfo() {toggle_speed_dial();}
+int1 manual_adjust_frequency();
+
+void LONG_press_dl()
+{
+   #ifdef include_manual_tuning
+   IF(dl)manual_adjust_frequency();
+   ELSE toggle_fine_tune_display();
+
+   #ELSE
+   toggle_fine_tune_display();
+
+   #endif
+}
+
+void LONG_press_vfom()
+{
+   errorbeep(3);
+   for(INT i  = 30; i <= 40; i++)
+   {save32(i, band_bank[i - 30]); }
+   FOR(i  = 41; i <= 51; i++)
+   {save32(i, band_bank[i - 41]); }
+   reset_cpu();
+}
+
+void LONG_press_mrvfo()
+{
+   #ifdef include_cb
+   toggle_cb_mode();
+
+   #endif
+}
+
+void LONG_press_split()
+{
+toggle_cat();
+}
+
+void LONG_press_vfoab()
+{
+save8(checkbyte_n, 0xFF);
+cls();
+errorbeep(3); 
+delay_ms(2000);
+reset_cpu();
+}
+
+void LONG_press_swap()
+{
+toggle_per_band_offset();
+
+}
+
+void micup(int8 increment)
+{
+         int8 state = get_state();
+         switch(state)
+         {
+            case 1: storage_buffer[1] += increment; break;
+            case 2: storage_buffer[2] += increment; break;
+            case 3: btn_up_handler(3); break;
+            case 4: btn_up_handler(4); break;
+         }
+
+}
+
+void micup_hold()
+{
+         int8 state = get_state();
+         switch(state)
+         {
+            case 1: storage_buffer[1] += 20; break;
+            case 2: storage_buffer[2] += 20; break;
+            case 3: btn_up_handler(3); break;
+            case 4: btn_up_handler(4); break;
+         }
+
+}
+
+void micdn(int8 increment)
+{
+         int8 state = get_state();
+         switch(state)
+         {
+            case 1: storage_buffer[1] -= increment; break;
+            case 2: storage_buffer[2] -= increment; break;
+            case 3: btn_dn_handler(3); break;
+            case 4: btn_dn_handler(4); break;
+         }
+                
+}
+
+void micdn_hold()
+{
+         int8 state = get_state();
+         switch(state)
+         {
+            case 1: storage_buffer[1] -= 20; break;
+            case 2: storage_buffer[2] -= 20; break;
+            case 3: btn_dn_handler(3); break;
+            case 4: btn_dn_handler(4); break;
+         }
+
+}
+
+void micfst()
+{
+         int8 state = get_state();
+         switch(state)
+         {
+            case 1: btn_up_handler(1); break;
+            case 2: btn_up_handler(2); break;
+            case 3: break;
+#ifdef include_cb
+            case 4: toggle_cb_region(); break;
+#endif
+         }
+             
+}
+
+int1 manual_adjust_frequency();
+void micfst_hold()
+{
+         if(manual_adjust_frequency())
+         {
+         if(get_state() == 4) {cl = 1; dcs = get_dcs();}
+         }
+}
+
+
+void micup_fst()
+{
+   int8 state = get_state();
+   switch(state)
+   {
+      case 1: storage_buffer[1] += 111; break;
+      case 2: storage_buffer[2] += 111; break;
+   }
+}
+
+void micdn_fst()
+{
+   int8 state = get_state();
+   switch(state)
+   {
+      case 1: storage_buffer[1] -= 111; break;
+      case 2: storage_buffer[2] -= 111; break;
+   }
+}
+
+void micup_fst_hold()
+{
+   int8 state = get_state();
+   switch(state)
+   {
+      case 1: storage_buffer[1] += 111; break;
+      case 2: storage_buffer[2] += 111; break;
+   }
+}
+
+void micdn_fst_hold()
+{
+   int8 state = get_state();
+   switch(state)
+   {
+      case 1: storage_buffer[1] -= 111; break;
+      case 2: storage_buffer[2] -= 111; break;
+   }
+}
+
+
+
+
+
