@@ -1,9 +1,12 @@
-FTPlus BETA channel. These are BETA / TESTING versions of FTPlus.
+FTPlus BETA channel.
+==
+These are BETA / TESTING versions of FTPlus.
+=
 
 No supplement is included, instead new notes will be provided here until certified release-ready.
 These releases may appear or disappear from time to time. Things may be missing or broken,
 though care is taken to ensure everything works.
-=========================================
+=
 
 v1.5.0 Proposed changes (included in above HEX and BLHEX files)
 
