@@ -6,16 +6,16 @@ Supplement permalink! IMPORTANT! READ THIS!!!
 https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/SUPPLEMENT.pdf
 
 Firmware permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/FTPLUS_FIRMWARE
+https://github.com/mattytrog/Yaesu-FT757GX/tree/main/FT_PLUS/PREBUILT_FIRMWARE
 
 Gerbers permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/Gerbers
+https://github.com/mattytrog/Yaesu-FT757GX/tree/main/FT_PLUS/Engineering_Files
 
-Updater app permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/FTPlus_UPDATER_APP
+Configurator and Updater app permalink!
+https://github.com/mattytrog/Yaesu-FT757GX/tree/main/FT_PLUS/PC_APPLICATIONS
 
 PICKIT FLASHABLE BOOTLOADERS permalink!
-https://github.com/mattytrog/Yaesu-FT757GX/blob/main/FT_PLUS/FLASHABLE_BOOTLOADERS
+https://github.com/mattytrog/Yaesu-FT757GX/tree/main/FT_PLUS/FLASHABLE_BOOTLOADERS
 
 *******************************************************
 
