@@ -123,7 +123,7 @@ int8 BITSA, BITSB, BITSC, BITSD;
 # bit flash = BITSB.4
 # bit fine_tune_display = BITSB.5
 # bit fine_tune_active = BITSB.6
-# bit fine_tune_inh = BITSC.7
+# bit fine_tune_inh = BITSB.7
 # bit jump = BITSC.0
 # bit cat_mode = BITSC.1
 # bit catmode_change_request = BITSC.2

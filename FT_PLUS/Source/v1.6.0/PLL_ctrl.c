@@ -53,32 +53,41 @@ int32 PLL_band_bank[30] =
 //!};
 
 #define cycles_delay 2
-int8 Q64_val;
-int8 Q64_tmp;
 
+void strobe_Q64(INT8 val)
+{
+   PORTA = 0;
+   delay_cycles(cycles_delay);
+   switch(val)
+   {
+      case 0: PORTA = 0; delay_cycles(cycles_delay); break;
+      case 1: PORTA = 8; delay_cycles(cycles_delay); break; //PLL1
+      case 2: PORTA = 4; delay_cycles(cycles_delay); break; //counter preset
+      case 3: PORTA = 12; delay_cycles(cycles_delay); break; //bpf data Q69/Q70
+      case 4: PORTA = 2; delay_us(20); break; //beep
+      case 5: PORTA = 10; delay_cycles(cycles_delay); break; //DL
+      case 6: PORTA = 6; delay_cycles(cycles_delay); break; //inh
+      case 7: PORTA = 14; delay_cycles(cycles_delay); break; //CAT TX
+   } 
+   PORTA = 0;
+   delay_cycles(cycles_delay);
+}
 
-void Q64(INT8 val)
+void default_Q64(INT8 val)
 {
    switch(val)
    {
-      case 0: PORTA = 0; break;
-      case 1: PORTA = 8; break;
-      case 2: PORTA = 4; break;
-      case 3: PORTA = 12; break;
-      case 4: PORTA = 2; delay_us(20); break;
-      case 5: PORTA = 10; break;
-      case 6: PORTA = 6; break;
-      case 7: PORTA = 14; break;
+      default: PORTA = 0; break;
+      case 1: PORTA = 10; break;
+      case 2: PORTA = 14; break;
    }
-   if(val) delay_cycles(cycles_delay);
-   Q64_val = val;
 }
 
-void PLL1(int8 data){PORTB = data; Q64_tmp = Q64_val; Q64(1); Q64(Q64_tmp);}
+void PLL1(int8 data){PORTB = data; strobe_Q64(1);}
 void PLL2(int8 data){PORTB = data; BUS_DATA128 = 1; delay_cycles(cycles_delay); BUS_DATA128 = 0;}
-void counter_preset_enable(){Q64_tmp = Q64_val; Q64(2); Q64(Q64_tmp);}
-void banddata(){Q64_tmp = Q64_val; Q64(3); Q64(Q64_tmp);}
-void beep(){Q64_tmp = Q64_val; Q64(4); Q64(Q64_tmp);}
+void counter_preset_enable(){strobe_Q64(2);}
+void banddata(){strobe_Q64(3);;}
+void beep(){strobe_Q64(4);}
 void errorbeep(INT8 beeps)
 {
    for (INT8 i = 0; i < beeps; ++i)
@@ -107,11 +116,9 @@ int8 read_counter()
 
 void load_10hz(INT8 val)
 {
-   save_port_b();
    INT8 loc100 = 112;
    PORTB = loc100 + val;
    counter_preset_enable();
-   restore_port_b();
 }
 void load_100hz(INT8 val)
 {
@@ -126,8 +133,8 @@ void quick_disp_flash(int8 beeps)
 #ifdef include_display
    for (INT8 i = 0; i < beeps; ++i)
    {
-   Q64(4); disp_buf[12] = mem_channel; delay_ms(100); 
-   Q64(Q64_tmp); disp_buf[12] = 15; delay_ms(100);
+   strobe_Q64(4); disp_buf[12] = mem_channel; delay_ms(100); 
+   disp_buf[12] = 15; delay_ms(100);
    }
 
 #endif
@@ -311,11 +318,11 @@ void set_PLL(INT32 offset_frequency, int1 force, int8 force_BPF)
 
        if(old_d10h != d10h)
        {
-       load_10hz(d10h + 1);
+       load_10hz(d10h);
        old_d10h = d10h;
        }
 
-       load_100hz(d100h+1);
+       load_100hz(d100h);
 
        res1 = read_counter();
        res2 = res1;

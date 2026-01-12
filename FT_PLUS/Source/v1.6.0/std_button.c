@@ -90,7 +90,7 @@ void vfom_swap_handler()
 
 void dial_lock_button_handler()
 {
-   if ( ! dl) {Q64 (5); dl = 1;} else{Q64 (0); dl =  0; }
+   if ( ! dl) dl = 1; else dl =  0;
 }
 
 void clarifier_button_handler()

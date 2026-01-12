@@ -3,6 +3,16 @@ void t1_isr(void)
 {
 if(fl_cnt < 255) ++fl_cnt; else fl_cnt = 0;
 if((fl_cnt) & 4) flash = 1; else flash = 0;
+
+#ifdef include_cat_kenwood
+if((cat_tx_request) && (dl)) default_Q64(2);
+if((cat_tx_request) && (!dl)) default_Q64(2);
+if((!cat_tx_request) && (!dl)) default_Q64(0);
+if((!cat_tx_request) && (dl)) default_Q64(1);
+#else
+if(!dl) default_Q64(0);
+if(dl) default_Q64(1);
+#endif
 clear_interrupt(INT_TIMER1);
 }
 

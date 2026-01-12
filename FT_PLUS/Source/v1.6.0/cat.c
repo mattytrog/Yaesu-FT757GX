@@ -141,28 +141,28 @@ char idbuf[5] =
    'I', 'D', '0', '0', '6'
 };
 
-void cat_transmit(INT1 tx_request)
-{
-   #ifdef debug_cat_tx
-
-   if (tx_request == 1) {Q64(5); dl = 1; dcs = get_dcs();} else {Q64(0); dl = 0; dcs = get_dcs();}
-   #ELSE
-   static int1 old_dl = dl;
-   if (tx_request == 1) 
-   {
-   
-   dl = 0;
-   Q64(7);
-   }
-   else
-   {
-   Q64(0);
-   dl = old_dl;
-   old_dl = 0;
-   }
-   #endif
-
-}
+//!void cat_transmit(INT1 tx_request)
+//!{
+//!   #ifdef debug_cat_tx
+//!
+//!   if (tx_request == 1) {Q64(5); dl = 1; dcs = get_dcs();} else {Q64(0); dl = 0; dcs = get_dcs();}
+//!   #ELSE
+//!   static int1 old_dl = dl;
+//!   if (tx_request == 1) 
+//!   {
+//!   
+//!   dl = 0;
+//!   Q64(7);
+//!   }
+//!   else
+//!   {
+//!   Q64(0);
+//!   dl = old_dl;
+//!   old_dl = 0;
+//!   }
+//!   #endif
+//!
+//!}
 
 VOID send_cat()
    {
@@ -278,7 +278,7 @@ VOID calc_if()
       ifbuf[27] = 48 + (mem_channel); //Mem CH second digit(eg 8)in ASCII not HEX
    }
 
-   IF(cat_tx_transmitting)ifbuf[28]  =('1'); else ifbuf[28] = ('0'); //TX / RX(0 RX, 1 TX)in ASCII
+   IF(tx_mode)ifbuf[28]  =('1'); else ifbuf[28] = ('0'); //TX / RX(0 RX, 1 TX)in ASCII
    ifbuf[29] = dummy_mode; //Mode 1 = LSB, 2 = USB, 3 = CW, 4 = FM, 5 = AM, 6 = FSK, 7 = CWN. All dummy values. Should reflect mode change in application
    IF(state == 1){ifbuf[30] = ('0'); ifbuf[32] = ('0'); }//VFO0(VFO A)
    IF(state == 2){ifbuf[30] = ('1'); ifbuf[32] = ('1'); }//VFO1(VFO B)
@@ -581,8 +581,8 @@ int8 action_kenwood_cat()
          //CASE 23: break; //Clar freq - 1 or 10
          //CASE 24: break; //Clar freq + 1 or 10
          //CASE 25: break; //toggle clar on off
-         CASE 26: cat_tx_request = 0; cat_transmit(cat_tx_request); break; //set rx mode
-         CASE 27: cat_tx_request = 1; cat_transmit(cat_tx_request); break; //set tx mode
+         CASE 26: cat_tx_request = 0; break; //set rx mode
+         CASE 27: cat_tx_request = 1; break; //set tx mode
          //CASE 28: break; //PMS on / off
          //CASE 29: break; //split on / off
          case 30: catmode_change_request = 1; break;
@@ -613,36 +613,6 @@ int8 action_kenwood_cat()
    return report_back;
 }
 
-void cat_tx_set()
-{
-   #ifdef debug_cat_tx
-   cat_tx_transmitting = dl;
-
-   #ELSE
-   cat_tx_transmitting = tx_mode;
-
-   #endif
-   IF ( (cat_tx_request) || (cat_tx_transmitting))
-   {
-      IF ( (cat_tx_request) && ( ! cat_tx_transmitting)) 
-      {
-      cat_transmit (1);
-      
-      }
-      
-      IF ( ( ! cat_tx_request) && (cat_tx_transmitting))
-      {
-      cat_transmit (0);
-      }
-   }
-
-   #ifdef cat_debug
-
-   printf ("CAT TX REQUEST % d", cat_tx_request);
-   printf ("CAT TRANSMITTING % d", cat_tx_transmitting);
-
-   #endif
-}
 #endif
 #endif
 

@@ -74,7 +74,7 @@ int8 freq_dial_basic(int32 &value, int8 dial_increment)
 #ifdef include_dial_accel
 
 #define dial_timer_max 255 //max spin down-timer. All percentages are based of this. Default 40000
-#define dial_timer_increment 6
+#define dial_timer_increment 7
 #define dial_timer_pullback 1
 #define dialspeed1 10
 #define dialspeed2 60

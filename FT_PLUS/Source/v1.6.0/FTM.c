@@ -1,5 +1,5 @@
-#define 18f4520
-//#define 18f452
+//#define 18f4520
+#define 18f452
 //#define 16f877a //FTMinus is automatically selected
 //#define 16f877 //FTMinus is automatically selected
 
@@ -256,7 +256,6 @@ void setup()
    enable_interrupts(INT_rda); //toggle interrupts to ensure serial is ready
    enable_interrupts (global);
    PORTA = 0;
-   Q64(0);
    
    
 }
@@ -352,23 +351,22 @@ void main()
 
 #if defined (include_cat_kenwood) || defined (include_cat_yaesu)
 
-      if(!pause_cat)
+      if((!pause_cat) && (!update))
       {
-         cat_update = perform_cat_action();
-         if(cat_update) 
+         if((counter >= 100) || ((counter > 0) && (baud_rate_n > 3)))
          {
-            counter = 100;
-            cat_update = 0;
-            state = get_state();
-            temp_freq = storage_buffer[state];
-            update = 1;
+            cat_update = perform_cat_action();
+            if(cat_update) 
+            {
+               counter = 100;
+               cat_update = 0;
+               state = get_state();
+               temp_freq = storage_buffer[state];
+               update = 1;
+            }
          }
-   
          
       }
-#ifdef include_cat_kenwood
-      cat_tx_set();
-#endif
 
 #endif
 
