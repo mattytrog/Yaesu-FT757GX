@@ -98,7 +98,7 @@ if (app_detected) return;
       }
       
    errorbeep(3);
-   delay_ms(1000);
+   delay_ms(250);
    while (( mic_fast) || (!mic_up) || (!mic_dn)){}
    btn_down = 0; mic_down = 0;
    storage_buffer[get_state()] = temp_freq;
@@ -312,10 +312,8 @@ void toggle_offset_type()
 void reset_bands()
 {
    errorbeep(3);
-   for(INT i  = 30; i <= 40; i++)
-   {write32(i, band_bank[i - 30]); }
-   FOR(i  = 41; i <= 51; i++)
-   {write32(i, band_bank[i - 41]); }
+   for (int8 i = vfoa_block; i <= (vfob_block - 1); i++)       {write32 (i, band_bank[i - vfoa_block]); }
+   for (i = vfob_block; i <= (vfob_block + 10); i++)           {write32 (i, band_bank[i - vfob_block]); }
    reset_cpu();
 }
 

@@ -120,34 +120,21 @@ void split_button_handler()
    }
 }
 
+
+void micup()
+{
+
+   switch (state)
+   {
 #ifdef include_fine_tuning
-void micup()
-{
-
-   switch (state)
-   {
       default: if (fine_tune_active){fine_tune_inh = 0; storage_buffer[state] += 1; } else storage_buffer[state] += 10; break;
-      case 3: if (mem_channel < 14) ++mem_channel; else mem_channel = 0; storage_buffer[3] = load_mem_ch_f (mem_channel); break;
-   }
-
-}
-
-void micdn()
-{
-   switch (state)
-   {
-      default: if (fine_tune_active){fine_tune_inh = 0; storage_buffer[state] -= 1; } else storage_buffer[state] -= 10; break;
-      case 3: if (mem_channel > 0) --mem_channel; else mem_channel = 14; storage_buffer[3] = load_mem_ch_f (mem_channel); break;
-   }
-}
 #else
-void micup()
-{
-
-   switch (state)
-   {
       default: storage_buffer[state] += 10; break;
+#endif
       case 3: if (mem_channel < 14) ++mem_channel; else mem_channel = 0; storage_buffer[3] = load_mem_ch_f (mem_channel); break;
+#ifdef include_cb
+      case 4: if(cb_channel < 40) ++cb_channel; else cb_channel = 1; load_cb_state(0); break;
+#endif
    }
 
 }
@@ -156,11 +143,18 @@ void micdn()
 {
    switch (state)
    {
+#ifdef include_fine_tuning
+      default: if (fine_tune_active){fine_tune_inh = 0; storage_buffer[state] -= 1; } else storage_buffer[state] -= 10; break;
+#else
       default: storage_buffer[state] -= 10; break;
+#endif
       case 3: if (mem_channel > 0) --mem_channel; else mem_channel = 14; storage_buffer[3] = load_mem_ch_f (mem_channel); break;
+#ifdef include_cb
+      case 4: if(cb_channel > 1) --cb_channel; else cb_channel = 40; load_cb_state(0); break;
+#endif
+   
    }
 }
-#endif
 
 void micfst()
 {
@@ -168,6 +162,9 @@ void micfst()
    {
       case 1: btn_up_handler (1); break;
       case 2: btn_up_handler (2); break;
+#ifdef include_cb
+      case 4: toggle_cb_region(); break;
+#endif
    }
 }
 
@@ -253,6 +250,7 @@ int8 enhanced_option (int8 opt)
       case 9: set_cb_mode(); break;
       case 10: set_cat_pause(); break;
       case 11: set_offset_type(); break;
+      case 12: set_manual_tune(); break;
 #endif
    }
    
@@ -273,8 +271,10 @@ void long_press_vfom()           {enhanced_option(lp_vfom);}
 void long_press_mrvfo()          {enhanced_option(lp_mrvfo);}
 void long_press_split()          {enhanced_option(lp_split);}
 void long_press_swap()           {enhanced_option(lp_swap);}
+void long_press_fast()           {enhanced_option(lp_fast);}
 #else
 void long_press_dial_lock_ndl()  {enhanced_option(1);}
 void long_press_vfoab()          {enhanced_option(2);}
+void long_press_fast()           {enhanced_option(0);}
 #endif
 

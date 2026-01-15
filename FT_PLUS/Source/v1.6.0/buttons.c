@@ -65,7 +65,7 @@ int8 buttonaction (INT8 opt)
       CASE 15:                micdn_fst();                        break;
       case 16:                micup_hold();                       break;
       case 17:                micdn_hold();                       break;
-      case 18: beep();        micfst_hold();                      break;
+      case 18:                long_press_fast();                  break;
       case 19:                micup_fst_hold();                   break;
       case 20:                micdn_fst_hold();                   break;
       case 35:                long_press_vfoab();                 break;
@@ -126,9 +126,10 @@ int8 res = 0;
 return res;
 }
 
-#define countdelay 500
+#define countdelay 200
 #define holdcount 100
 #define micholdcount 30
+#define micholdcountfast 100
 int8 micdelay = 20;
 int8 buttons(INT8 option)
 {
@@ -148,7 +149,7 @@ int8 buttons(INT8 option)
       while(pb2){}
       if(!btn_down)
       {
-         btnres = scan_buttons(); if(btnres) btn_down = 1;
+         if(scan_buttons()) btn_down = 1;
          count= 0;
       }
       
@@ -156,6 +157,7 @@ int8 buttons(INT8 option)
       {
          if(scan_buttons())
          {
+            btnres = scan_buttons();
             if(count < 255) ++count;
             if(option != 2) delay_us(countdelay);
          }
@@ -229,40 +231,52 @@ int8 buttons(INT8 option)
       
       if(!mic_down)
       {
-         micres = scan_mic_buttons();
-         if(micres) mic_down = 1;
+         if(scan_mic_buttons()) mic_down = 1;
          mic_count= 0;
       
       }
       
       if(mic_down)
       {
-         if(mic_count < 255) ++mic_count;
-            delay_us(micdelay);
-      
-         if(mic_count)
+         if(scan_mic_buttons())
          {
-
-               if(mic_count < micholdcount) res = 1;
-               if(mic_count >= micholdcount) res = 2;
-
+            micres = scan_mic_buttons();
+            if(mic_count < 255) ++mic_count;
+            delay_us(micdelay);
+         }
+         if(mic_count > debounce)
+         {
+               switch(micres)
+               {
+                  default:
+                  if(mic_count < micholdcount) res = 1;
+                  if(mic_count >= micholdcount) res = 2;
+                  break;
+                  
+                  case 13:
+                  if(mic_count < micholdcount) res = 1;
+                  if(mic_count >= micholdcountfast) res = 2;
+                  break;
+               
+               }
          }
          
          if(res == 1)
          {
             if(!scan_mic_buttons())
             {
-               if(long_press) {long_press = 0; return 0;}
+               if(long_press) {long_press = 0; rtnres = 0;}
                else rtnres = micres;
                micres = 0;
                mic_down = 0;
+               mic_count = 0;
                return rtnres;
             }
          }
          
          if(res == 2)
          {
-               micres = scan_mic_buttons();
+               //micres = scan_mic_buttons();
                rtnres = micres + 5;
                if((!scan_mic_buttons()) || (rtnres == 18))
                {

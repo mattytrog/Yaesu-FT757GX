@@ -1,5 +1,5 @@
-//#define 18f4520
-#define 18f452
+#define 18f4520
+//#define 18f452
 //#define 16f877a //FTMinus is automatically selected
 //#define 16f877 //FTMinus is automatically selected
 
@@ -70,7 +70,8 @@ int8  lp_dial_lock_dl,
       lp_vfom,
       lp_mrvfo,
       lp_split,
-      lp_swap;
+      lp_swap,
+      lp_fast;
 #ifdef include_cb
 int8 cb_channel;
 int8 cb_region;
@@ -161,6 +162,7 @@ void set_defaults()
                                                    write8(lp_mrvfo_n, 9);
                                                    write8(lp_split_n, 10);
                                                    write8(lp_swap_n, 11);
+                                                   write8(lp_fast_n, 0);
 
 #endif
 #ifdef include_cb
@@ -224,7 +226,7 @@ void load_values()
    lp_mrvfo = read8(lp_mrvfo_n);
    lp_split = read8(lp_split_n);
    lp_swap = read8(lp_swap_n);
-   
+   lp_fast = read8(lp_fast_n);
 #endif
    load_all_buffers();
    

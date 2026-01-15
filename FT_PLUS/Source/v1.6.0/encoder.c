@@ -48,7 +48,16 @@ int8 misc_dial(int16 &value, int8 direction)
    return 0;
 }
 
-
+int8 dial_moved()
+{
+   res1 = read_counter();
+   if(res1 == res2) return 0;
+   else 
+   {
+      res2 = res1; 
+      if(dial_dir) return 2; else return 1;
+      }
+}
 
 
 
@@ -95,7 +104,7 @@ res1 = read_counter();
    
    if(res1 != res2)
    {
-      if(dial_dir) 
+      if(dial_dir)
       {
       value +=dial_increment;
       }

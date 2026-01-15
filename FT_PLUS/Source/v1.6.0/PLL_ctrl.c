@@ -318,11 +318,11 @@ void set_PLL(INT32 offset_frequency, int1 force, int8 force_BPF)
 
        if(old_d10h != d10h)
        {
-       load_10hz(d10h);
+       load_10hz(d10h+1);
        old_d10h = d10h;
        }
 
-       load_100hz(d100h);
+       load_100hz(d100h+1);
 
        res1 = read_counter();
        res2 = res1;

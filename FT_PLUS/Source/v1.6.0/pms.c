@@ -49,6 +49,7 @@ void pms_scan_basic()
          upd_count = 0;
       }
       update_PLL(temp_freq, 0xFF);
+      delay_us(VFO_dwell_time);
       res = buttons(1);
       if(squelch_open)
          {
@@ -57,7 +58,7 @@ void pms_scan_basic()
          
       if(!stopped)
       {
-         delay_us(VFO_dwell_time);
+         
          temp_freq +=2;
          count = 0;
       }
@@ -189,6 +190,17 @@ void pms_scan_advanced()
    while(true)
    {
       
+      update_PLL(curr_freq, 0xFF);
+      //dwell times
+      switch(pms_state)
+      {
+         default: delay_us(VFO_dwell_time); break;
+         case 4: delay_ms(CB_dwell_time); break;
+         case 7: delay_ms(MR_dwell_time); break;
+         case 8: delay_ms(CB_dwell_time); break;
+      
+      }
+      if(squelch_open) stopped = 1;
       
       if(flash)
       {
@@ -218,15 +230,14 @@ void pms_scan_advanced()
          }
          break;
       }
-      update_PLL(curr_freq, 0xFF);
-      if(squelch_open) stopped = 1;
+      
+      
       res = buttons(1);
       if(!stopped)
       {
          switch(pms_state)
          {
             default:
-            delay_us(VFO_dwell_time);
             if(dir) //freq1 is lower than freq2
             {
                
@@ -240,19 +251,16 @@ void pms_scan_advanced()
             break;
 #ifdef include_cb            
             case 4:
-            delay_ms(CB_dwell_time);
             if(curr_channel < 40) ++curr_channel; else curr_channel = 1;
             cb_upd = 1;
             break;
 #endif            
-            case 7:
-            delay_ms(MR_dwell_time);
+            case 7:            
             if(curr_channel < 14) ++curr_channel; else curr_channel = 0;
             mr_upd = 1;
             break;
 #ifdef include_cb            
             case 8:
-            delay_ms(CB_dwell_time);
             if(curr_channel < 40) ++curr_channel; 
             else 
             { 
@@ -270,7 +278,7 @@ void pms_scan_advanced()
       if(stopped)
       {
          
-         if((res == 11) || (res == 3) || (res == 33)) 
+         if((res == 11) || (res == 3) || (res == 33) || (dial_moved() == 2)) 
          {
             switch(state)
             {
@@ -289,7 +297,7 @@ void pms_scan_advanced()
 #endif
             }
          }
-         if((res == 12) || (res == 2) || (res == 32)) 
+         if((res == 12) || (res == 2) || (res == 32) || (dial_moved() == 1)) 
          {
             switch(state)
             {
@@ -309,6 +317,7 @@ void pms_scan_advanced()
             }
          }
          
+         
          if((res) || (squelch_open)) count = 0;
          if(count > 3)
          {
@@ -327,6 +336,7 @@ void pms_scan_advanced()
          
          break;
       } 
+      
       
       
       

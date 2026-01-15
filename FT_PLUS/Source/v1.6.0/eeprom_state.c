@@ -139,9 +139,10 @@
 #define lp_mrvfo_n               0xF5
 #define lp_split_n               0xF6
 #define lp_swap_n                0xF7
-#define id_enable_n              0xF8
-#define dummy_mode_n             0xF9
-#define old_state_n              0xFA
+#define lp_fast_n                0xF8
+#define id_enable_n              0xF9
+#define dummy_mode_n             0xFA
+#define old_state_n              0xFB
 #define checkbyte_n              0xFF
 
 //!void long_press_dial_lock_ndl()  {enhanced_option(lp_dial_lock_ndl);}

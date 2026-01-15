@@ -129,7 +129,7 @@ int8 BITSA, BITSB, BITSC, BITSD;
 # bit catmode_change_request = BITSC.2
 # bit cat_tx_transmitting = BITSC.3
 # bit speed_dial = BITSC.4
-# bit savetimerON = BITSC.5
+# bit fast_held = BITSC.5
 # bit per_band_offset = BITSC.6
 # bit cat_tx_request = BITSC.7
 # bit setup_offset = BITSD.0

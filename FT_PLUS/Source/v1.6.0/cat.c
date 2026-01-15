@@ -396,11 +396,11 @@ void FT_set()
    {
       switch(buffer[2])
       {
-         case '0': savetimerON = 0;break;
-         case '1': savetimerON = 1;break;
+         case '0': autosave = 0;break;
+         case '1': autosave = 1;break;
       }
-      calc_ans('1','B', 3, savetimerON);
-      write8(savetimer_n, savetimerON);
+      calc_ans('1','B', 3, autosave);
+      write8(savetimer_n, autosave);
    }
    
    void finetune1C()
