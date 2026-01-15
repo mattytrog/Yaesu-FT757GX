@@ -1,0 +1,6 @@
+BUGFIX C v1.6.0
+
+Fixed incorrect button behaviour when holding buttons (previous press value was being returned instead of current)
+Disabled manual tune access from holding FAST (manual tune was getting turned on if one let go of up/down button on mic first)
+Updated configurator to accomodate long-press FAST on mic
+Fixed off-by-one error during PMS scan
