@@ -1,9 +1,9 @@
-#define 18f4520
-//#define 18f452
+//#define 18f4520
+#define 18f452
 //#define 16f877a //FTMinus is automatically selected
 //#define 16f877 //FTMinus is automatically selected
 
-#define bootloader_upgrade //FTPlus only. If you do not own a Pickit, this MUST BE UNCOMMENTED!!!
+//#define bootloader_upgrade //FTPlus only. If you do not own a Pickit, this MUST BE UNCOMMENTED!!!
 //define ft_minus // Very basic mode, echoing standard CPU. Meant for use with smaller PICs
 
 #include "chip_set.c"

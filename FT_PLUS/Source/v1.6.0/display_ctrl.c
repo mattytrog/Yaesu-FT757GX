@@ -13,7 +13,7 @@
    #define speed1 2
 #endif
 
-#define display_interrupt_hold 16 // * 50 us
+#define display_interrupt_hold 40 // * 50 us
 
 void split_value(int32 value, INT8 &d3, int8 &d4, int8 &d5, int8 &d6, int8 &d7, int8 &d8, int8 &d9)
 {
@@ -44,23 +44,24 @@ void send_disp()
    if(!cycles_to_go)
       {
          
+         
          k8 = (disp_buf[i])&0xF;
          k4 = (disp_buf[i] >> 1)&0xF; 
          k2 = (disp_buf[i] >> 2)&0xF; 
          k1 = (disp_buf[i] >> 3)&0xF;
-         if(pb2)
-         {
-         disp_INT = 1;
+         //if(!pb2) while(!pb2){};
+         if(pb2) disp_INT = 1;
+
          int8 j = 0;
          while(j<display_interrupt_hold)
          {
             ++j;
-            delay_us(5);
+            delay_us(1);
+            if(!pb2) break;
          }
          j = 0;
          disp_INT = 0;
          if(i < 13) i+=1;
-         }
          if(!pb2) {i = 0; cycles_to_go = disp_latches;}
          
       }

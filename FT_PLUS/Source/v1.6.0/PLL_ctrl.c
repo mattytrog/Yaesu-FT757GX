@@ -64,7 +64,7 @@ void strobe_Q64(INT8 val)
       case 1: PORTA = 8; delay_cycles(cycles_delay); break; //PLL1
       case 2: PORTA = 4; delay_cycles(cycles_delay); break; //counter preset
       case 3: PORTA = 12; delay_cycles(cycles_delay); break; //bpf data Q69/Q70
-      case 4: PORTA = 2; delay_us(20); break; //beep
+      case 4: PORTA = 2; delay_us(40); break; //beep
       case 5: PORTA = 10; delay_cycles(cycles_delay); break; //DL
       case 6: PORTA = 6; delay_cycles(cycles_delay); break; //inh
       case 7: PORTA = 14; delay_cycles(cycles_delay); break; //CAT TX

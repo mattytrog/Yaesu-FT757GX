@@ -82,16 +82,28 @@ if (app_detected) return;
   
          }
          
+         IF((res == 18) || (res == 36)) { break;}
          
+         
+         
+         
+#if defined (include_cat_kenwood) || defined (include_cat_yaesu)
 
-         IF(temp_freq != old_temp_freq)
+         if(!pause_cat)
+         {
+               if(perform_cat_action()) {temp_freq = storage_buffer[state]; res = 41;}
+         }
+
+#endif
+
+IF(res)
          {
          storage_buffer[get_state()] = temp_freq;
          update_PLL(temp_freq, 0xFF);
          old_temp_freq = temp_freq;
-         }
+         }         
          
-         IF((res == 18) || (res == 36)) { break;}
+         
                
 
       
