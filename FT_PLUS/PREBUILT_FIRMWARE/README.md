@@ -27,6 +27,6 @@ I cannot access bootloader
 I've held VFO A/B to reset all memories, but my radio is constantly beeping
  - Correct behaviour. Power off and on again to complete the reset.
 
-I can update via PIC no problem and there is no signal transmission. What about your giant warning in the supplement???
+I can update via PICKIT no problem and there is no signal transmission. What about your giant warning in the supplement???
  - Oh yeah. I fixed that. It was transmitting because when the PIC enters programming mode (MCLR high), a few instructions
 	are ran. One of these was tuning the PLL circuits. So I've removed the initial tune until radio is fully booted.
