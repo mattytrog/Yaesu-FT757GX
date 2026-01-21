@@ -1,0 +1,6 @@
+BUGFIX D v1.6.0
+
+Changed beeper pulse for aftermarket dial boards (40uS instead of 20uS)
+Tuned display driver interrupts and timings(no visible difference - for compatibility purposes)
+Manual button tuning CAT hook has been restored, so CAT changes are reflected in manual button tuning mode
+and visa-versa.
