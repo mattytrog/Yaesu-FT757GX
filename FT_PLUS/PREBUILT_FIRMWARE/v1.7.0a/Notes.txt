@@ -1,0 +1,16 @@
+v1.7.0 – Mostly CAT changes
+    • Cat TX in CLAR or SPLIT modes now works correctly
+    • Cat driver improvements – Commander in Yaesu mode works correctly now
+    • Y-Library introduction:
+        ◦ Complete front panel control with PMS and 500k ‘virtual’ buttons
+        ◦ Complete FTPlus command control over CAT
+        ◦ Statuses returned on required functions
+        ◦ Offset / RIT information is now controllable over CAT
+
+
+BUGFIX D v1.6.0
+
+Changed beeper pulse for aftermarket dial boards (40uS instead of 20uS)
+Tuned display driver interrupts and timings(no visible difference - for compatibility purposes)
+Manual button tuning CAT hook has been restored, so CAT changes are reflected in manual button tuning mode
+and visa-versa.
